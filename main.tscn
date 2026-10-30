@@ -1,18 +1,15 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene format=3 uid="uid://bnlssdjewpqfy"]
 
-[ext_resource path="res://game_manager.gd" type="Script" id="1_manager"]
-[ext_resource path="res://laboratory.tscn" type="PackedScene" id="2_lab"]
-[ext_resource path="res://fire.tscn" type="PackedScene" id="3_fire"]
-[ext_resource path="res://modifier_manager.gd" type="Script" id="4_modifier"]
-[ext_resource path="res://player.gd" type="Script" id="5_player"]
-[ext_resource path="res://game_config_normal.tres" type="Resource" id="6_config"]
+[ext_resource type="Script" uid="uid://bdw5vajm6wsl" path="res://game_manager.gd" id="1_manager"]
+[ext_resource type="PackedScene" path="res://laboratory.tscn" id="2_lab"]
+[ext_resource type="PackedScene" path="res://fire.tscn" id="3_fire"]
+[ext_resource type="Script" uid="uid://dqer66yytgd0y" path="res://modifier_manager.gd" id="4_modifier"]
+[ext_resource type="Script" uid="uid://gx5ydo5uwntr" path="res://player.gd" id="5_player"]
+[ext_resource type="Resource" path="res://game_config_normal.tres" id="6_config"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 18.0
 height = 48.0
-
-[sub_resource type="StyleBoxFlat" id="Style_overlay"]
-bg_color = Color(0.02, 0.025, 0.04, 0.88)
 
 [sub_resource type="StyleBoxFlat" id="Style_hud"]
 bg_color = Color(0.03, 0.04, 0.07, 0.9)
@@ -21,84 +18,87 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="Main" type="Node2D"]
+[sub_resource type="StyleBoxFlat" id="Style_overlay"]
+bg_color = Color(0.02, 0.025, 0.04, 0.88)
+
+[node name="Main" type="Node2D" unique_id=471322484]
 script = ExtResource("1_manager")
 config = ExtResource("6_config")
 
-[node name="Laboratory" parent="." instance=ExtResource("2_lab")]
+[node name="Laboratory" parent="." unique_id=1250697022 instance=ExtResource("2_lab")]
 
-[node name="Player" type="CharacterBody2D" parent="."]
+[node name="Player" type="CharacterBody2D" parent="." unique_id=1181706638]
 position = Vector2(640, 560)
 script = ExtResource("5_player")
 
-[node name="Body" type="Polygon2D" parent="Player"]
-polygon = PackedVector2Array(-20, 24, -20, -14, 0, -28, 20, -14, 20, 24)
+[node name="Body" type="Polygon2D" parent="Player" unique_id=354396075]
 color = Color(0.35, 0.55, 0.85, 1)
+polygon = PackedVector2Array(-20, 24, -20, -14, 0, -28, 20, -14, 20, 24)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=968646843]
 shape = SubResource("Capsule_player")
 
-[node name="Fire" parent="." instance=ExtResource("3_fire")]
+[node name="Fire" parent="." unique_id=1103042418 instance=ExtResource("3_fire")]
 position = Vector2(1100, 530)
 
-[node name="ModifierManager" type="Node" parent="."]
+[node name="ModifierManager" type="Node" parent="." unique_id=1723326386]
 script = ExtResource("4_modifier")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1089151581]
 
-[node name="Panel" type="Panel" parent="HUD"]
+[node name="Panel" type="Panel" parent="HUD" unique_id=1018044795]
 offset_left = 55.0
 offset_top = 105.0
 offset_right = 1225.0
 offset_bottom = 160.0
-theme_override_styles/panel = SubResource("Style_hud")
 mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_hud")
 
-[node name="Score" type="Label" parent="HUD"]
+[node name="Score" type="Label" parent="HUD" unique_id=80782514]
 offset_left = 75.0
 offset_top = 120.0
 offset_right = 300.0
 offset_bottom = 145.0
-text = "SCORE: 0"
 theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 18
+text = "SCORE: 0"
 
-[node name="Time" type="Label" parent="HUD"]
+[node name="Time" type="Label" parent="HUD" unique_id=1969556746]
 offset_left = 530.0
 offset_top = 120.0
 offset_right = 750.0
 offset_bottom = 145.0
-text = "TIME: 180"
-horizontal_alignment = 1
 theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 18
+text = "TIME: 180"
+horizontal_alignment = 1
 
-[node name="Fire" type="Label" parent="HUD"]
+[node name="Fire" type="Label" parent="HUD" unique_id=680673481]
 offset_left = 990.0
 offset_top = 120.0
 offset_right = 1200.0
 offset_bottom = 145.0
-text = "FIRE: 20%"
-horizontal_alignment = 2
 theme_override_colors/font_color = Color(1, 0.48, 0.2, 1)
 theme_override_font_sizes/font_size = 18
+text = "FIRE: 20%"
+horizontal_alignment = 2
 
-[node name="Status" type="Label" parent="HUD"]
+[node name="Status" type="Label" parent="HUD" unique_id=32669096]
 offset_left = 300.0
 offset_top = 230.0
 offset_right = 980.0
 offset_bottom = 360.0
-horizontal_alignment = 1
-vertical_alignment = 1
 theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
 theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="ScreenOverlay" type="CanvasLayer" parent="."]
+[node name="ScreenOverlay" type="CanvasLayer" parent="." unique_id=104911340]
 
-[node name="Overlay" type="Panel" parent="ScreenOverlay"]
-offset_left = 260.0
-offset_top = 220.0
-offset_right = 1020.0
-offset_bottom = 390.0
-theme_override_styles/panel = SubResource("Style_overlay")
+[node name="Overlay" type="Panel" parent="ScreenOverlay" unique_id=1794232722]
+offset_left = 267.0
+offset_top = 212.0
+offset_right = 1027.0
+offset_bottom = 382.0
 mouse_filter = 2
+theme_override_styles/panel = SubResource("Style_overlay")
