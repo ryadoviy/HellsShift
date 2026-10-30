@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://b25wylvc5s0rq"]
+
+[ext_resource type="Script" uid="uid://ghk66yc1lo26" path="res://scenes/ui/hud.gd" id="1_0mwgc"]
+[ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="2_hqnrr"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
+bg_color = Color(0.28627452, 0.21568628, 0.3254902, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_13qdw"]
+bg_color = Color(0.9098039, 0.4745098, 0.22352941, 1)
+
+[node name="HUD" type="CanvasLayer" unique_id=14307137]
+script = ExtResource("1_0mwgc")
+
+[node name="Interface" type="Control" parent="." unique_id=1555750047]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="RecipePanel" type="PanelContainer" parent="Interface" unique_id=733431243]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 370.0
+offset_bottom = 130.0
+
+[node name="RecipeLabel" type="Label" parent="Interface/RecipePanel" unique_id=1767796706]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 23
+text = "RECIPE: INVISIBILITY"
+autowrap_mode = 2
+
+[node name="TimeLabel" type="Label" parent="Interface" unique_id=2040151101]
+layout_mode = 0
+offset_left = 550.0
+offset_top = 20.0
+offset_right = 730.0
+offset_bottom = 75.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 33
+text = "03:00"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="Interface" unique_id=1585000704]
+layout_mode = 0
+offset_left = 980.0
+offset_top = 20.0
+offset_right = 1240.0
+offset_bottom = 55.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 22
+text = "SCORE: 0"
+
+[node name="FireLabel" type="Label" parent="Interface" unique_id=1358488736]
+layout_mode = 0
+offset_left = 980.0
+offset_top = 60.0
+offset_right = 1240.0
+offset_bottom = 85.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 22
+text = "FIRE: 20%"
+
+[node name="FireBar" type="ProgressBar" parent="Interface" unique_id=43256715]
+layout_mode = 0
+offset_left = 981.0
+offset_top = 95.0
+offset_right = 1241.0
+offset_bottom = 122.0
+theme_override_styles/background = SubResource("StyleBoxFlat_xrivr")
+theme_override_styles/fill = SubResource("StyleBoxFlat_13qdw")
+value = 20.0
+show_percentage = false
+
+[node name="InventoryLabel" type="Label" parent="Interface" unique_id=22345377]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 660.0
+offset_right = 370.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 22
+text = "INVENTORY: EMPTY"
+
+[node name="HintLabel" type="Label" parent="Interface" unique_id=2114392698]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 660.0
+offset_right = 810.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_hqnrr")
+theme_override_font_sizes/font_size = 22
+text = "PRESS E TO INTERACT"
+horizontal_alignment = 1
