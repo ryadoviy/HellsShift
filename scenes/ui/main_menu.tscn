@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cdfx64eo2c0he"]
 
+[ext_resource type="Script" uid="uid://daohyndwwo7o7" path="res://scenes/ui/main_menu.gd" id="1_sl1te"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
 bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
 border_width_left = 2
@@ -29,6 +31,7 @@ corner_radius_bottom_left = 12
 [node name="MainMenu" type="Control" unique_id=197330378]
 layout_mode = 3
 anchors_preset = 0
+script = ExtResource("1_sl1te")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1695211202]
 layout_mode = 0
@@ -101,3 +104,41 @@ theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_xrivr")
 theme_override_styles/hover = SubResource("StyleBoxFlat_13qdw")
 text = "EXIT"
+
+[node name="DarkOverlay" type="ColorRect" parent="." unique_id=1908204186]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7019608)
+
+[node name="HowToPlayPanel" type="PanelContainer" parent="." unique_id=1899760179]
+visible = false
+layout_mode = 0
+offset_left = 370.0
+offset_top = 210.0
+offset_right = 910.0
+offset_bottom = 561.6667
+
+[node name="Instruction" type="Label" parent="HowToPlayPanel" unique_id=298072509]
+layout_mode = 2
+text = "HOW TO PLAY
+
+WASD - Move
+E - Interact
+Q - Drop item
+ESC - Pause
+
+Collect magical ingredients
+and brew potions in the cauldron.
+
+Wrong ingredients increase the fire!
+Use water to prevent disaster.
+
+Survive until the timer runs out!"
+autowrap_mode = 2
