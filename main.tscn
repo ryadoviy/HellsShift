@@ -1,0 +1,104 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource path="res://game_manager.gd" type="Script" id="1_manager"]
+[ext_resource path="res://laboratory.tscn" type="PackedScene" id="2_lab"]
+[ext_resource path="res://fire.tscn" type="PackedScene" id="3_fire"]
+[ext_resource path="res://modifier_manager.gd" type="Script" id="4_modifier"]
+[ext_resource path="res://player.gd" type="Script" id="5_player"]
+[ext_resource path="res://game_config_normal.tres" type="Resource" id="6_config"]
+
+[sub_resource type="CapsuleShape2D" id="Capsule_player"]
+radius = 18.0
+height = 48.0
+
+[sub_resource type="StyleBoxFlat" id="Style_overlay"]
+bg_color = Color(0.02, 0.025, 0.04, 0.88)
+
+[sub_resource type="StyleBoxFlat" id="Style_hud"]
+bg_color = Color(0.03, 0.04, 0.07, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_manager")
+config = ExtResource("6_config")
+
+[node name="Laboratory" parent="." instance=ExtResource("2_lab")]
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(640, 560)
+script = ExtResource("5_player")
+
+[node name="Body" type="Polygon2D" parent="Player"]
+polygon = PackedVector2Array(-20, 24, -20, -14, 0, -28, 20, -14, 20, 24)
+color = Color(0.35, 0.55, 0.85, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("Capsule_player")
+
+[node name="Fire" parent="." instance=ExtResource("3_fire")]
+position = Vector2(1100, 530)
+
+[node name="ModifierManager" type="Node" parent="."]
+script = ExtResource("4_modifier")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="HUD"]
+offset_left = 55.0
+offset_top = 105.0
+offset_right = 1225.0
+offset_bottom = 160.0
+theme_override_styles/panel = SubResource("Style_hud")
+mouse_filter = 2
+
+[node name="Score" type="Label" parent="HUD"]
+offset_left = 75.0
+offset_top = 120.0
+offset_right = 300.0
+offset_bottom = 145.0
+text = "SCORE: 0"
+theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="Time" type="Label" parent="HUD"]
+offset_left = 530.0
+offset_top = 120.0
+offset_right = 750.0
+offset_bottom = 145.0
+text = "TIME: 180"
+horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="Fire" type="Label" parent="HUD"]
+offset_left = 990.0
+offset_top = 120.0
+offset_right = 1200.0
+offset_bottom = 145.0
+text = "FIRE: 20%"
+horizontal_alignment = 2
+theme_override_colors/font_color = Color(1, 0.48, 0.2, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="Status" type="Label" parent="HUD"]
+offset_left = 300.0
+offset_top = 230.0
+offset_right = 980.0
+offset_bottom = 360.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_colors/font_color = Color(0.95, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 30
+
+[node name="ScreenOverlay" type="CanvasLayer" parent="."]
+
+[node name="Overlay" type="Panel" parent="ScreenOverlay"]
+offset_left = 260.0
+offset_top = 220.0
+offset_right = 1020.0
+offset_bottom = 390.0
+theme_override_styles/panel = SubResource("Style_overlay")
+mouse_filter = 2
