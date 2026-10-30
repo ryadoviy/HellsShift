@@ -19,7 +19,7 @@
 - створено `ModifierManager` як основу для секретних умов;
 - додано HUD зі score, timer та fire level;
 - додано стартове меню, паузу та екран результату;
-- підготовлено інтеграційні точки для Player, RecipeManager, Cauldron, Inventory та HUD.
+- підготовлено інтеграційні точки для `Player`, `RecipeManager`, `Cauldron`, `Inventory` та `HUD`.
 
 ### Структура роботи
 
@@ -58,5 +58,3 @@
 - `Laboratory`: сигнал `location_changed`;
 - правильне завершення рецепту: `on_recipe_completed()`;
 - неправильний інгредієнт: `on_ingredient_wrong()`.
-
-Інші сцени розробників можна підключити до `main.tscn`, зберігши погоджені назви вузлів, сигналів і методів.
