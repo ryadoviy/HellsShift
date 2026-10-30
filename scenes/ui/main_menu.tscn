@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://cdfx64eo2c0he"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
+bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.59607846, 0.45882353, 0.654902, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_13qdw"]
+bg_color = Color(0.39607844, 0.2627451, 0.49019608, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_87aya"]
+bg_color = Color(0.39607844, 0.2627451, 0.49019608, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="MainMenu" type="Control" unique_id=197330378]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Background" type="ColorRect" parent="." unique_id=1695211202]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.12941177, 0.105882354, 0.1882353, 1)
+
+[node name="Title" type="Label" parent="." unique_id=1320373872]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 100.0
+offset_right = 1040.0
+offset_bottom = 210.0
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_colors/font_outline_color = Color(0.3529412, 0.19215687, 0.3647059, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 72
+text = "HELL'S SHIFT"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="." unique_id=1096639126]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 215.0
+offset_right = 940.0
+offset_bottom = 279.41666
+theme_override_colors/font_color = Color(0.75686276, 0.6509804, 0.8, 1)
+theme_override_font_sizes/font_size = 22
+text = "THE LAST WITCH HOUR
+"
+horizontal_alignment = 1
+
+[node name="MenuButtons" type="VBoxContainer" parent="." unique_id=935598546]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 310.0
+offset_right = 790.0
+offset_bottom = 560.0
+theme_override_constants/separation = 15
+
+[node name="PlayButton" type="Button" parent="MenuButtons" unique_id=316082087]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_xrivr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_13qdw")
+text = "PLAY"
+
+[node name="DifficultyButton" type="Button" parent="MenuButtons" unique_id=630792569]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_xrivr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_13qdw")
+text = "DIFFICULTY: NORMAL
+"
+
+[node name="HowToPlayButton" type="Button" parent="MenuButtons" unique_id=428017200]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_xrivr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_87aya")
+text = "HOW TO PLAY"
+
+[node name="ExitButton" type="Button" parent="MenuButtons" unique_id=793430213]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_xrivr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_13qdw")
+text = "EXIT"
