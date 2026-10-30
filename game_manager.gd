@@ -17,10 +17,15 @@ var score := 0
 var time_left := 0.0
 var state := GameState.MENU
 var result_text := ""
+var gameplay: Gameplay
 
 func _ready() -> void:
 	if config == null:
 		config = GameConfig.normal()
+	gameplay = Gameplay.new()
+	gameplay.name = "Gameplay"
+	add_child(gameplay)
+	gameplay.setup(self)
 	fire.fire_maxed.connect(_on_fire_maxed)
 	time_left = config.duration
 	_set_state(GameState.MENU)
@@ -50,6 +55,7 @@ func start_game() -> void:
 	time_left = config.duration
 	fire.set_level(config.initial_fire)
 	result_text = ""
+	gameplay.reset_round()
 	player.position = Vector2(640, 560)
 	_set_state(GameState.PLAYING)
 	modifier_manager.on_game_started(self)
