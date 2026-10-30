@@ -1,0 +1,101 @@
+[gd_scene format=3 uid="uid://dd8otoiqqq1ss"]
+
+[ext_resource type="Script" uid="uid://dtu65yx6qlvla" path="res://scenes/ui/game_over.gd" id="1_x6o8e"]
+[ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="2_vfrx6"]
+[ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="3_o6b8n"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
+content_margin_left = 25.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 25.0
+bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6862745, 0.5019608, 0.36862746, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="GameOver" type="Control" unique_id=339193641]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_x6o8e")
+
+[node name="Background" type="ColorRect" parent="." unique_id=90902983]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.12941177, 0.105882354, 0.1882353, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=136685875]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResultPanel" type="PanelContainer" parent="CenterContainer" unique_id=332738882]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xrivr")
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/ResultPanel" unique_id=811415391]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ResultTitle" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=957068808]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_vfrx6")
+theme_override_font_sizes/font_size = 50
+text = "LABORATORY BURNED!"
+horizontal_alignment = 1
+
+[node name="ScullIcon" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=1736875269]
+layout_mode = 2
+theme_override_font_sizes/font_size = 65
+text = "🔥"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=1719491814]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_o6b8n")
+theme_override_font_sizes/font_size = 32
+text = "SCORE: 0"
+horizontal_alignment = 1
+
+[node name="PotionsLabel" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=2047093816]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9098039, 0.827451, 0.9137255, 1)
+theme_override_fonts/font = ExtResource("3_o6b8n")
+theme_override_font_sizes/font_size = 23
+text = "POTIONS BREWED: 0"
+horizontal_alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="CenterContainer/ResultPanel/Content" unique_id=1731081907]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_o6b8n")
+theme_override_font_sizes/font_size = 22
+text = "PLAY AGAIN"
+
+[node name="MainMenuButton" type="Button" parent="CenterContainer/ResultPanel/Content" unique_id=153460137]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_o6b8n")
+theme_override_font_sizes/font_size = 22
+text = "MAIN MENU"
