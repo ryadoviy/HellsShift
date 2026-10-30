@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://clnifasgm11en"]
+
+[ext_resource type="Script" uid="uid://bmgjbfxo1tj24" path="res://scenes/ui/pause_menu.gd" id="1_f6eus"]
+[ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="2_8uki6"]
+[ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="3_0bnpd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
+content_margin_left = 25.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 25.0
+bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="PauseMenu" type="Control" unique_id=682726898]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_f6eus")
+
+[node name="DarkOverlay" type="ColorRect" parent="." unique_id=1694632097]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.043137256, 0.03137255, 0.0627451, 0.8)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=258740404]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="CenterContainer" unique_id=23267831]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xrivr")
+
+[node name="Buttons" type="VBoxContainer" parent="CenterContainer/MenuPanel" unique_id=2002625551]
+custom_minimum_size = Vector2(300, 55)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PausedTitle" type="Label" parent="CenterContainer/MenuPanel/Buttons" unique_id=517354636]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_8uki6")
+theme_override_font_sizes/font_size = 40
+text = "GAME PAUSED"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CenterContainer/MenuPanel/Buttons" unique_id=43893047]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("2_8uki6")
+theme_override_font_sizes/font_size = 22
+text = "The magic is waiting..."
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="CenterContainer/MenuPanel/Buttons" unique_id=130306597]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_0bnpd")
+theme_override_font_sizes/font_size = 20
+text = "RESUME"
+
+[node name="RestartButton" type="Button" parent="CenterContainer/MenuPanel/Buttons" unique_id=1333591482]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_0bnpd")
+theme_override_font_sizes/font_size = 20
+text = "RESTART"
+
+[node name="MainMenuButton" type="Button" parent="CenterContainer/MenuPanel/Buttons" unique_id=1260882492]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
+theme_override_fonts/font = ExtResource("3_0bnpd")
+theme_override_font_sizes/font_size = 20
+text = "MAIN MENU"

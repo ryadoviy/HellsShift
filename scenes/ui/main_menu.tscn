@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://daohyndwwo7o7" path="res://scenes/ui/main_menu.gd" id="1_sl1te"]
 [ext_resource type="Texture2D" uid="uid://cyenc5it5uqcj" path="res://assets/backgrounds/menu_background.png" id="2_fe2o3"]
 [ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="3_1g8jr"]
+[ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="4_m1kxf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
 bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
@@ -83,6 +84,7 @@ offset_top = 215.0
 offset_right = 940.0
 offset_bottom = 279.41666
 theme_override_colors/font_color = Color(0.75686276, 0.6509804, 0.8, 1)
+theme_override_fonts/font = ExtResource("4_m1kxf")
 theme_override_font_sizes/font_size = 22
 text = "THE LAST WITCH HOUR
 "
