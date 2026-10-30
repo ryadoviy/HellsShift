@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://cdfx64eo2c0he"]
 
 [ext_resource type="Script" uid="uid://daohyndwwo7o7" path="res://scenes/ui/main_menu.gd" id="1_sl1te"]
+[ext_resource type="Texture2D" uid="uid://cyenc5it5uqcj" path="res://assets/backgrounds/menu_background.png" id="2_fe2o3"]
+[ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="3_1g8jr"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
 bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
@@ -39,16 +41,38 @@ offset_right = 1280.0
 offset_bottom = 720.0
 color = Color(0.12941177, 0.105882354, 0.1882353, 1)
 
+[node name="BackgroundImage" type="TextureRect" parent="." unique_id=1731421576]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_fe2o3")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundTint" type="ColorRect" parent="." unique_id=1775125428]
+layout_mode = 0
+offset_left = 2.0
+offset_right = 1282.0
+offset_bottom = 720.0
+mouse_filter = 2
+color = Color(0.08627451, 0.050980393, 0.14901961, 0.7254902)
+
 [node name="Title" type="Label" parent="." unique_id=1320373872]
 layout_mode = 0
-offset_left = 240.0
+offset_left = 242.0
 offset_top = 100.0
-offset_right = 1040.0
-offset_bottom = 210.0
+offset_right = 1042.0
+offset_bottom = 229.0
 theme_override_colors/font_color = Color(0.9411765, 0.7882353, 0.5411765, 1)
 theme_override_colors/font_outline_color = Color(0.3529412, 0.19215687, 0.3647059, 1)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 72
+theme_override_fonts/font = ExtResource("3_1g8jr")
+theme_override_font_sizes/font_size = 100
 text = "HELL'S SHIFT"
 horizontal_alignment = 1
 
