@@ -15,6 +15,8 @@ var normal_sprite_scale: Vector2
 var frozen_time_left: float = 0.0
 var hidden_time_left: float = 0.0
 var hideout_cooldown_left: float = 0.0
+var keyboard_interact_was_pressed: bool = false
+var keyboard_drop_was_pressed: bool = false
 
 @onready var witch_sprite: AnimatedSprite2D = $WitchSprite
 
@@ -58,6 +60,8 @@ func _physics_process(_delta: float) -> void:
 	if is_frozen():
 		velocity = Vector2.ZERO
 		witch_sprite.pause()
+		keyboard_interact_was_pressed = false
+		keyboard_drop_was_pressed = false
 		return
 
 	var direction := Input.get_vector(
@@ -68,6 +72,8 @@ func _physics_process(_delta: float) -> void:
 	)
 	if direction == Vector2.ZERO:
 		direction = _get_keyboard_direction()
+
+	_handle_keyboard_actions()
 
 	if direction != Vector2.ZERO:
 		facing_direction = direction.normalized()
@@ -105,6 +111,19 @@ func _get_keyboard_direction() -> Vector2:
 		keyboard_direction.y += 1.0
 
 	return keyboard_direction.normalized()
+
+
+func _handle_keyboard_actions() -> void:
+	var interact_pressed := Input.is_key_pressed(KEY_E)
+	var drop_pressed := Input.is_key_pressed(KEY_Q)
+
+	if interact_pressed and not keyboard_interact_was_pressed:
+		interact_with_nearest()
+	if drop_pressed and not keyboard_drop_was_pressed:
+		drop_held_item()
+
+	keyboard_interact_was_pressed = interact_pressed
+	keyboard_drop_was_pressed = drop_pressed
 
 
 func _process(delta: float) -> void:
