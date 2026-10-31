@@ -192,11 +192,6 @@ func on_interacted(
 					"FIRE EXTINGUISHED! -35%",
 					Color(0.5, 0.85, 1.0)
 				)
-			else:
-				_show_feedback(
-					"WATER IS LOCKED!",
-					Color(1.0, 0.5, 0.5)
-				)
 
 			return
 

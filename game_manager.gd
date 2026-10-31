@@ -211,9 +211,6 @@ func use_water() -> bool:
 	if state != GameState.PLAYING:
 		return false
 
-	if not water_unlocked:
-		return false
-
 	fire.decrease(config.water_power)
 
 	water_unlocked = false
