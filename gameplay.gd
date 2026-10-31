@@ -236,7 +236,7 @@ func on_interacted(
 
 func _try_take_water(target: GameInteractable) -> void:
 	# Перевіряємо нагороду за потрібну кількість зіль.
-	if not manager.water_unlocked:
+	if manager.potions_brewed < manager.config.potions_for_water:
 		_show_feedback(
 			"BREW %d POTIONS TO UNLOCK WATER!"
 			% manager.config.potions_for_water,

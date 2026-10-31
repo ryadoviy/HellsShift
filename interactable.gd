@@ -57,7 +57,7 @@ func _setup_visual_sprite() -> void:
 	match kind:
 		Kind.INGREDIENT:
 			if item_id == &"water":
-				image_path = "res://assets/sprites/objects/water.png"
+				image_path = "res://assets/sprites/objects/water.PNG"
 			else:
 				image_path = (
 					"res://assets/sprites/ingredients/%s.png"
@@ -69,7 +69,7 @@ func _setup_visual_sprite() -> void:
 			target_size = 250.0
 
 		Kind.WATER:
-			image_path = "res://assets/sprites/objects/water.png"
+			image_path = "res://assets/sprites/objects/water.PNG"
 			target_size = 150.0
 
 	if not ResourceLoader.exists(image_path):

@@ -171,7 +171,7 @@ func _get_item_texture(item_id: StringName) -> Texture2D:
 	var path: String
 
 	if item_id == &"water":
-		path = "res://assets/sprites/objects/water.png"
+		path = "res://assets/sprites/objects/water.PNG"
 	else:
 		path = "res://assets/sprites/ingredients/%s.png" % str(item_id)
 
