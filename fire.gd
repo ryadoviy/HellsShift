@@ -10,7 +10,7 @@ signal fire_maxed
 
 @onready var flame: Polygon2D = get_node_or_null("Flame")
 @onready var light: PointLight2D = get_node_or_null("PointLight2D")
-@onready var fire_sprite: Sprite2D = get_node_or_null("FireSprite")
+@onready var fire_sprite: AnimatedSprite2D = get_node_or_null("FireSprite")
 
 var animation_time: float = 0.0
 var effects_visible: bool = false
@@ -22,9 +22,10 @@ func _ready() -> void:
 
 	if flame != null:
 		flame.hide()
-
 	if fire_sprite != null:
 		fire_sprite.modulate = Color.WHITE
+		fire_sprite.animation = &"burn"
+		fire_sprite.play()
 
 	set_level(level)
 
@@ -57,13 +58,29 @@ func set_level(value: float) -> void:
 
 
 func update_fire_visual() -> void:
-	if fire_sprite == null or fire_sprite.texture == null:
+	if fire_sprite == null:
+		return
+
+	if fire_sprite.sprite_frames == null:
+		return
+
+	if not fire_sprite.sprite_frames.has_animation(&"burn"):
 		return
 
 	fire_sprite.visible = level > 0.0
-	fire_sprite.modulate = Color.WHITE
 
-	var texture_size: Vector2 = fire_sprite.texture.get_size()
+	var texture: Texture2D = (
+		fire_sprite.sprite_frames.get_frame_texture(
+			&"burn",
+			0
+		)
+	)
+
+	if texture == null:
+		return
+
+	var texture_size: Vector2 = texture.get_size()
+
 	var longest_side: float = maxf(
 		texture_size.x,
 		texture_size.y
@@ -82,7 +99,6 @@ func update_fire_visual() -> void:
 		target_size / longest_side
 	)
 
-
 func _process(delta: float) -> void:
 	var manager := get_parent() as GameManager
 
@@ -97,7 +113,13 @@ func _process(delta: float) -> void:
 	if manager.state == GameManager.GameState.PLAYING:
 		animation_time += delta
 
-	queue_redraw()
+	if fire_sprite != null:
+		if manager.state == GameManager.GameState.PLAYING and level > 0.0:
+			fire_sprite.speed_scale = 1.0
+		else:
+			fire_sprite.speed_scale = 0.0
+
+		queue_redraw()
 
 
 func _room_point(point: Vector2) -> Vector2:
