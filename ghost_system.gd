@@ -17,6 +17,7 @@ var objects: Node2D
 var player: CorePlayer
 var ghosts: Array[Dictionary] = []
 var spawn_time_left: float = 8.0
+var wave_cooldown_active: bool = false
 var animation_time: float = 0.0
 var wave_spawn_index: int = 0
 
@@ -92,6 +93,7 @@ func reset() -> void:
 
 	ghosts.clear()
 	spawn_time_left = minf(3.0, spawn_interval)
+	wave_cooldown_active = false
 	animation_time = 0.0
 	wave_spawn_index = 0
 	queue_redraw()
@@ -104,12 +106,15 @@ func advance(delta: float) -> void:
 	animation_time += delta
 	spawn_time_left -= delta
 
-	if spawn_time_left <= 0.0:
-		spawn_time_left = spawn_interval
+	if (
+		ghosts.is_empty()
+		and spawn_time_left <= 0.0
+	):
 		if ghosts.is_empty():
 			wave_spawn_index = 0
 		while ghosts.size() < max_ghosts and spawn_ghost():
 			pass
+		wave_cooldown_active = false
 
 	for index in range(ghosts.size() - 1, -1, -1):
 		var ghost: Dictionary = ghosts[index]
@@ -158,6 +163,8 @@ func advance(delta: float) -> void:
 				if position.distance_to(exit_position) < 2.0:
 					_remove_ghost_sprite(ghost)
 					ghosts.remove_at(index)
+					if ghosts.is_empty() and not wave_cooldown_active:
+						_start_wave_cooldown()
 					continue
 
 		_check_player_collision(ghost)
@@ -185,6 +192,13 @@ func _check_player_collision(ghost: Dictionary) -> void:
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
 		ghost["hit_pause_left"] = 1.0
+		if not wave_cooldown_active:
+			_start_wave_cooldown()
+
+
+func _start_wave_cooldown() -> void:
+	wave_cooldown_active = true
+	spawn_time_left = spawn_interval
 
 
 func spawn_ghost() -> bool:
