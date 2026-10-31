@@ -1,3 +1,4 @@
+
 extends Node2D
 class_name GhostSabotage
 
@@ -5,7 +6,9 @@ signal ghost_spawned
 
 enum Phase { FLYING, BLOCKING, LEAVING }
 
-# Учасник №3 може змінювати ці параметри через configure().
+@export var ghost_size: float = 150.0
+@export var ghost_fps: float = 6.0
+
 var spawn_interval: float = 25.0
 var max_ghosts: int = 2
 var block_duration: float = 3.0
@@ -16,10 +19,53 @@ var ghosts: Array[Dictionary] = []
 var spawn_time_left: float = 8.0
 var animation_time: float = 0.0
 
+var ghost_animations: Array[SpriteFrames] = []
+
+
+func _ready() -> void:
+	_load_ghost_animations()
+
 
 func setup(gameplay_objects: Node2D) -> void:
 	objects = gameplay_objects
 	z_index = 6
+
+	if ghost_animations.is_empty():
+		_load_ghost_animations()
+
+
+func _load_ghost_animations() -> void:
+	ghost_animations.clear()
+
+	for ghost_number in range(1, 4):
+		var frames := SpriteFrames.new()
+		frames.add_animation("fly")
+		frames.set_animation_speed("fly", ghost_fps)
+		frames.set_animation_loop("fly", true)
+
+		# Прибираємо стандартну непотрібну анімацію
+		if frames.has_animation("default"):
+			frames.remove_animation("default")
+
+		for frame_number in range(1, 4):
+			var path := (
+                "res://assets/sprites/ghosts/ghost_%d/%02d.png"
+				% [ghost_number, frame_number]
+			)
+
+			if not ResourceLoader.exists(path):
+				push_warning("Ghost image not found: " + path)
+				continue
+
+			var texture := load(path) as Texture2D
+
+			if texture != null:
+				frames.add_frame("fly", texture)
+
+		if frames.get_frame_count("fly") > 0:
+			ghost_animations.append(frames)
+
+	print("Loaded ghost animations: ", ghost_animations.size())
 
 
 func configure(
@@ -35,6 +81,7 @@ func configure(
 func reset() -> void:
 	for ghost in ghosts:
 		_release_target(ghost)
+		_remove_ghost_sprite(ghost)
 
 	ghosts.clear()
 	spawn_time_left = minf(8.0, spawn_interval)
@@ -42,7 +89,6 @@ func reset() -> void:
 	queue_redraw()
 
 
-# Викликається Gameplay лише під час активної гри.
 func advance(delta: float) -> void:
 	if objects == null:
 		return
@@ -62,6 +108,7 @@ func advance(delta: float) -> void:
 
 		if not is_instance_valid(target):
 			_release_target(ghost)
+			_remove_ghost_sprite(ghost)
 			ghosts.remove_at(index)
 			continue
 
@@ -99,6 +146,7 @@ func advance(delta: float) -> void:
 
 			Phase.LEAVING:
 				var exit_position: Vector2 = ghost["exit"]
+
 				position = position.move_toward(
 					exit_position,
 					flight_speed * delta
@@ -106,12 +154,15 @@ func advance(delta: float) -> void:
 				ghost["position"] = position
 
 				if position.distance_to(exit_position) < 2.0:
+					_remove_ghost_sprite(ghost)
 					ghosts.remove_at(index)
+					continue
+
+		_update_ghost_sprite(ghost)
 
 	queue_redraw()
 
 
-# Публічний метод також підходить для проклятих подій.
 func spawn_ghost() -> bool:
 	if objects == null or ghosts.size() >= max_ghosts:
 		return false
@@ -143,7 +194,14 @@ func spawn_ghost() -> bool:
 
 	var from_left: bool = randf() < 0.5
 	var edge_x: float = -70.0 if from_left else 1350.0
-	var entry_position := Vector2(edge_x, randf_range(100.0, 230.0))
+	var entry_position := Vector2(
+		edge_x,
+		randf_range(100.0, 230.0)
+	)
+
+	# Створюємо графічного привида
+	var sprite := _create_ghost_sprite()
+	sprite.position = entry_position
 
 	ghosts.append({
 		"target": target,
@@ -153,12 +211,71 @@ func spawn_ghost() -> bool:
 		"time_left": block_duration,
 		"seed": randf_range(0.0, TAU),
 		"original_modulate": target.modulate,
-		"released": false
+		"released": false,
+		"sprite": sprite
 	})
 
 	queue_redraw()
 	ghost_spawned.emit()
 	return true
+
+
+func _create_ghost_sprite() -> AnimatedSprite2D:
+	var sprite := AnimatedSprite2D.new()
+	sprite.name = "AnimatedGhost"
+	sprite.centered = true
+
+	add_child(sprite)
+
+	if ghost_animations.is_empty():
+		push_warning("No ghost animations loaded")
+		return sprite
+
+	sprite.sprite_frames = ghost_animations.pick_random()
+
+	var texture: Texture2D = (
+		sprite.sprite_frames.get_frame_texture("fly", 0)
+	)
+
+	if texture != null:
+		var texture_size := texture.get_size()
+		var longest_side := maxf(
+			texture_size.x,
+			texture_size.y
+		)
+
+		if longest_side > 0.0:
+			sprite.scale = Vector2.ONE * (
+				ghost_size / longest_side
+			)
+
+	sprite.play("fly")
+	return sprite
+
+
+func _update_ghost_sprite(ghost: Dictionary) -> void:
+	var sprite := ghost.get("sprite") as AnimatedSprite2D
+
+	if not is_instance_valid(sprite):
+		return
+
+	var position: Vector2 = ghost["position"]
+	var seed_value: float = float(ghost["seed"])
+
+	# Легке плавне погойдування під час польоту
+	position.y += sin(
+		animation_time * 3.5 + seed_value
+	) * 7.0
+
+	sprite.position = position
+
+
+func _remove_ghost_sprite(ghost: Dictionary) -> void:
+	var sprite := ghost.get("sprite") as AnimatedSprite2D
+
+	if is_instance_valid(sprite):
+		sprite.hide()
+		sprite.queue_free()
 
 
 func _release_target(ghost: Dictionary) -> void:
@@ -178,7 +295,11 @@ func _release_target(ghost: Dictionary) -> void:
 
 
 func _draw() -> void:
+	# Залишаємо тільки індикатор часу блокування
 	for ghost in ghosts:
+		if int(ghost["phase"]) != Phase.BLOCKING:
+			continue
+
 		var position: Vector2 = ghost["position"]
 		var seed_value: float = float(ghost["seed"])
 
@@ -186,79 +307,20 @@ func _draw() -> void:
 			animation_time * 3.5 + seed_value
 		) * 7.0
 
-		_draw_ghost(position, seed_value)
-
-		if int(ghost["phase"]) == Phase.BLOCKING:
-			var remaining: float = float(ghost["time_left"])
-			var progress: float = clampf(
-				remaining / block_duration,
-				0.0,
-				1.0
-			)
-
-			draw_arc(
-				position + Vector2(0, 8),
-				37.0,
-				-PI * 0.5,
-				-PI * 0.5 + TAU * progress,
-				36,
-				Color(0.8, 0.65, 1.0, 0.9),
-				3.0,
-				true
-			)
-
-
-func _draw_ghost(position: Vector2, seed_value: float) -> void:
-	# М'яке світіння.
-	for ring in range(4):
-		draw_circle(
-			position,
-			38.0 - float(ring) * 5.0,
-			Color(0.65, 0.8, 1.0, 0.035)
+		var remaining: float = float(ghost["time_left"])
+		var progress: float = clampf(
+			remaining / block_duration,
+			0.0,
+			1.0
 		)
 
-	var silhouette := PackedVector2Array()
-
-	# Округла голова.
-	for step in range(17):
-		var angle: float = PI + PI * float(step) / 16.0
-		silhouette.append(
-			position + Vector2(
-				cos(angle) * 25.0,
-				sin(angle) * 28.0
-			)
+		draw_arc(
+			position + Vector2(0, 8),
+			37.0,
+			-PI * 0.5,
+			-PI * 0.5 + TAU * progress,
+			36,
+			Color(0.8, 0.65, 1.0, 0.9),
+			3.0,
+			true
 		)
-
-	# Хвилястий нижній край.
-	for step in range(9):
-		var x: float = 25.0 - float(step) * 6.25
-		var wave: float = sin(
-			float(step) * PI * 0.5
-			+ animation_time * 4.0
-			+ seed_value
-		) * 4.0
-
-		silhouette.append(
-			position + Vector2(x, 30.0 + wave)
-		)
-
-	draw_colored_polygon(
-		silhouette,
-		Color(0.78, 0.88, 1.0, 0.8)
-	)
-
-	draw_circle(
-		position + Vector2(-9, -3),
-		4.0,
-		Color(0.16, 0.1, 0.3)
-	)
-	draw_circle(
-		position + Vector2(9, -3),
-		4.0,
-		Color(0.16, 0.1, 0.3)
-	)
-	draw_circle(
-		position + Vector2(0, 10),
-		5.0,
-		Color(0.22, 0.12, 0.35, 0.8)
-	)

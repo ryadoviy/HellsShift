@@ -23,11 +23,15 @@ var result_text: String = ""
 var gameplay: Gameplay
 
 var selected_difficulty: String = "NORMAL"
-
+var fire_growth_time_left: float = 10.0
+var correct_potion_streak: int = 0
+var water_unlocked: bool = false
 
 func _ready() -> void:
 	if config == null:
 		config = GameConfig.normal()
+	else:
+		config = config.duplicate(true) as GameConfig
 
 	gameplay = Gameplay.new()
 	gameplay.name = "Gameplay"
@@ -62,8 +66,14 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	if state != GameState.PLAYING:
-		return
+	fire_growth_time_left -= delta
+
+	while fire_growth_time_left <= 0.0:
+		fire_growth_time_left += config.fire_growth_interval
+		fire.increase(config.fire_growth_amount)
+
+		if state != GameState.PLAYING:
+			return
 
 	time_left = maxf(0.0, time_left - delta)
 
@@ -86,6 +96,28 @@ func _on_play_pressed(difficulty: String) -> void:
 	selected_difficulty = difficulty
 	start_game()
 
+func apply_fire_difficulty() -> void:
+	match selected_difficulty.to_upper():
+		"EASY":
+			config.fire_growth_interval = 15.0
+			config.fire_growth_amount = 3.0
+
+		"NORMAL":
+			config.fire_growth_interval = 10.0
+			config.fire_growth_amount = 5.0
+
+		"HARD":
+			config.fire_growth_interval = 7.0
+			config.fire_growth_amount = 8.0
+
+		_:
+			config.fire_growth_interval = 10.0
+			config.fire_growth_amount = 5.0
+
+	print("DIFFICULTY: ", selected_difficulty)
+	print("FIRE EVERY: ", config.fire_growth_interval, "s")
+	print("FIRE GROWTH: +", config.fire_growth_amount, "%")
+
 
 func _on_exit_pressed() -> void:
 	get_tree().quit()
@@ -96,9 +128,14 @@ func _on_resume_pressed() -> void:
 
 
 func start_game() -> void:
+	apply_fire_difficulty()
 	score = 0
 	potions_brewed = 0
 	time_left = config.duration
+	
+	fire_growth_time_left = config.fire_growth_interval
+	correct_potion_streak = 0
+	water_unlocked = false
 	result_text = ""
 
 	fire.set_level(config.initial_fire)
@@ -159,9 +196,20 @@ func on_ingredient_wrong() -> void:
 	fire.increase(config.wrong_fire)
 
 
-func use_water() -> void:
+func use_water() -> bool:
+	if state != GameState.PLAYING:
+		return false
+
+	if not water_unlocked:
+		return false
+
 	fire.decrease(config.water_power)
 
+	water_unlocked = false
+	correct_potion_streak = 0
+
+	_update_hud()
+	return true
 
 func _set_state(new_state: GameState) -> void:
 	state = new_state
