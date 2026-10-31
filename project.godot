@@ -68,3 +68,7 @@ pause_game={
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+
+[autoload]
+
+GameAudio="*res://audio_manager.gd"

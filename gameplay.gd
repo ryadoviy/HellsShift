@@ -17,6 +17,7 @@ var player: CorePlayer
 var recipes: RecipeManager
 var objects: Node2D
 var cauldron: GameInteractable
+var ghost_system: GhostSabotage
 
 var feedback_layer: CanvasLayer
 var feedback_label: Label
@@ -72,6 +73,11 @@ func setup(game_manager: Node) -> void:
 		Color(0.2, 0.6, 1.0)
 	)
 
+	ghost_system = GhostSabotage.new()
+	ghost_system.name = "GhostSystem"
+	add_child(ghost_system)
+	ghost_system.setup(objects)
+
 
 func _setup_feedback() -> void:
 	feedback_layer = CanvasLayer.new()
@@ -107,11 +113,16 @@ func create_object(
 	target.object_color = color
 	target.set_meta("dropped", dropped)
 
-	if kind == GameInteractable.Kind.CAULDRON:
-		target.display_name = "Cauldron"
-		target.interaction_distance = 150.0
-	else:
-		target.display_name = str(ITEM_NAMES.get(item_id, item_id))
+	match kind:
+		GameInteractable.Kind.CAULDRON:
+			target.display_name = "Cauldron"
+			target.interaction_distance = 150.0
+		GameInteractable.Kind.WATER:
+			target.display_name = str(ITEM_NAMES.get(item_id, item_id))
+			target.interaction_distance = 120.0
+		_:
+			target.display_name = str(ITEM_NAMES.get(item_id, item_id))
+			target.interaction_distance = 70.0 if dropped else 150.0
 
 	target.interacted.connect(on_interacted)
 	objects.add_child(target)
@@ -125,6 +136,13 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 	if actor != player:
 		return
 
+	if target.get_meta("ghost_blocked", false):
+		_show_feedback(
+			"GHOST IS BLOCKING THIS INGREDIENT!",
+			Color(0.8, 0.65, 1.0)
+		)
+		return
+
 	if target.kind == GameInteractable.Kind.CAULDRON:
 		if not player.inventory.has_item():
 			if not recipes.is_brewing:
@@ -133,9 +151,11 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 
 		var held_item: StringName = player.inventory.held_item
 
-		# Перевіряємо зайнятість ДО вилучення предмета.
 		if recipes.is_brewing and held_item != &"water":
-			_show_feedback("CAULDRON IS MIXING...", Color(1.0, 0.85, 0.4))
+			_show_feedback(
+				"CAULDRON IS MIXING...",
+				Color(1.0, 0.85, 0.4)
+			)
 			return
 
 		var item_id: StringName = player.inventory.remove_item()
@@ -174,6 +194,8 @@ func on_item_dropped(item_id: StringName, drop_position: Vector2) -> void:
 
 
 func reset_round() -> void:
+	ghost_system.reset()
+
 	for target in objects.get_children():
 		if target.get_meta("dropped", false):
 			target.hide()
@@ -232,16 +254,30 @@ func _process(delta: float) -> void:
 	)
 	feedback_layer.visible = playing
 
-	# Таймери та ефекти завмирають на паузі.
+	if ghost_system != null:
+		ghost_system.visible = (
+			playing
+			or manager.state == GameManager.GameState.PAUSED
+		)
+
+		# Після виходу з раунду прибираємо блокування.
+		if (
+			not playing
+			and manager.state != GameManager.GameState.PAUSED
+		):
+			if not ghost_system.ghosts.is_empty():
+				ghost_system.reset()
+
 	if not playing:
 		return
 
 	recipes.advance_brewing(delta)
 
-	# Завершення рецепта може завершити раунд через пожежу.
 	if manager.state != GameManager.GameState.PLAYING:
 		feedback_layer.hide()
 		return
+
+	ghost_system.advance(delta)
 
 	effect_time += delta
 	feedback_time_left = maxf(0.0, feedback_time_left - delta)

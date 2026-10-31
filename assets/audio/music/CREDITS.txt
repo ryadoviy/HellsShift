@@ -1,0 +1,5 @@
+﻿Music: "Loop: Lonely Witch" by HorrorPen
+Source: https://opengameart.org/content/loop-lonely-witch
+License: Creative Commons Attribution 3.0
+https://creativecommons.org/licenses/by/3.0/
+Original audio unchanged; renamed to castle.ogg and looped during playback.
