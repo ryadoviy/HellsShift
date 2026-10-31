@@ -205,7 +205,7 @@ func can_interact(actor: Node2D) -> bool:
 	if kind == Kind.CAULDRON:
 		allowed_distance = maxf(allowed_distance, 150.0)
 	elif kind == Kind.SAFE_ZONE:
-		allowed_distance = minf(allowed_distance, 78.0)
+		allowed_distance = minf(allowed_distance, 42.0)
 
 	return (
 		get_interaction_position().distance_to(actor.global_position)

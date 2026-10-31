@@ -154,7 +154,7 @@ func create_object(
 
 		GameInteractable.Kind.SAFE_ZONE:
 			target.display_name = "Hideout"
-			target.interaction_distance = 78.0
+			target.interaction_distance = 42.0
 
 		_:
 			target.display_name = str(
