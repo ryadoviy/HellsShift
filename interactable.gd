@@ -3,7 +3,7 @@ class_name GameInteractable
 
 const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
 const SAFE_ZONE_TEXTURE := preload(
-	"res://assets/sprites/objects/safe_point_pumpkin.jpg"
+	"res://assets/sprites/objects/safe_point_pumpkin.png"
 )
 
 signal interacted(target: GameInteractable, actor: Node)
