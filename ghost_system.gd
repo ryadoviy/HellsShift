@@ -13,6 +13,7 @@ var block_duration: float = 3.0
 var flight_speed: float = 180.0
 
 var objects: Node2D
+var player: CorePlayer
 var ghosts: Array[Dictionary] = []
 var spawn_time_left: float = 8.0
 var animation_time: float = 0.0
@@ -30,6 +31,10 @@ func setup(gameplay_objects: Node2D) -> void:
 
 	if ghost_animations.is_empty():
 		_load_ghost_animations()
+
+
+func set_player(target: CorePlayer) -> void:
+	player = target
 
 
 func _load_ghost_animations() -> void:
@@ -72,7 +77,7 @@ func configure(
 	duration: float
 ) -> void:
 	spawn_interval = maxf(1.0, interval)
-	max_ghosts = clampi(limit, 0, 3)
+	max_ghosts = clampi(limit, 0, 6)
 	block_duration = maxf(0.1, duration)
 
 
@@ -156,9 +161,24 @@ func advance(delta: float) -> void:
 					ghosts.remove_at(index)
 					continue
 
+		_check_player_collision(ghost)
 		_update_ghost_sprite(ghost)
 
 	queue_redraw()
+
+
+func _check_player_collision(ghost: Dictionary) -> void:
+	if player == null or player.is_frozen():
+		return
+
+	var ghost_position: Vector2 = ghost["position"]
+	var distance: float = player.global_position.distance_to(
+		to_global(ghost_position)
+	)
+
+	if distance <= 72.0 and not bool(ghost.get("player_hit", false)):
+		ghost["player_hit"] = true
+		player.freeze_for(block_duration)
 
 
 func spawn_ghost() -> bool:
@@ -210,6 +230,7 @@ func spawn_ghost() -> bool:
 		"seed": randf_range(0.0, TAU),
 		"original_modulate": target.modulate,
 		"released": false,
+		"player_hit": false,
 		"sprite": sprite
 	})
 

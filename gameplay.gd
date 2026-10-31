@@ -93,6 +93,7 @@ func setup(game_manager: Node) -> void:
 	ghost_system.name = "GhostSystem"
 	add_child(ghost_system)
 	ghost_system.setup(objects)
+	ghost_system.set_player(player)
 
 
 func _setup_feedback() -> void:

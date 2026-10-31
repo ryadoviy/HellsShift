@@ -12,6 +12,7 @@ var facing_direction: Vector2 = Vector2.DOWN
 var held_item_sprite: Sprite2D
 var item_textures: Dictionary = {}
 var normal_sprite_scale: Vector2
+var frozen_time_left: float = 0.0
 
 @onready var witch_sprite: AnimatedSprite2D = $WitchSprite
 
@@ -52,6 +53,10 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if is_frozen():
+		velocity = Vector2.ZERO
+		return
+
 	var direction := Input.get_vector(
 		"move_left",
 		"move_right",
@@ -68,6 +73,22 @@ func _physics_process(_delta: float) -> void:
 	update_witch_animation(direction)
 	_align_sprite_to_feet()
 	_update_depth()
+
+
+func _process(delta: float) -> void:
+	if frozen_time_left <= 0.0:
+		return
+
+	frozen_time_left = maxf(0.0, frozen_time_left - delta)
+
+
+func freeze_for(duration: float) -> void:
+	frozen_time_left = maxf(frozen_time_left, duration)
+	velocity = Vector2.ZERO
+
+
+func is_frozen() -> bool:
+	return frozen_time_left > 0.0
 
 
 # Повертає текстуру поточного кадру AnimatedSprite2D.
@@ -228,6 +249,9 @@ func _update_depth() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_frozen():
+		return
+
 	if event.is_action_pressed("interact"):
 		interact_with_nearest()
 	elif event.is_action_pressed("drop_item"):
@@ -305,6 +329,7 @@ func drop_held_item() -> void:
 func reset_player() -> void:
 	velocity = Vector2.ZERO
 	facing_direction = Vector2.DOWN
+	frozen_time_left = 0.0
 
 	if inventory != null:
 		inventory.reset()
