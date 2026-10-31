@@ -39,7 +39,7 @@ func _ready() -> void:
 
 	var caption := Label.new()
 	caption.text = display_name
-	caption.size = Vector2(130, 30)
+	caption.size = Vector2(140, 30)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	caption.add_theme_font_override("font", UI_FONT)
