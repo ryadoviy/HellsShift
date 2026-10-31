@@ -26,6 +26,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Godot export templates
+        run: |
+          apt-get update
+          apt-get install -y curl unzip
+          curl -L \
+            -o /tmp/godot-export-templates.tpz \
+            https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p /github/home/.local/share/godot/export_templates/4.4.1.stable
+          unzip -q -o /tmp/godot-export-templates.tpz -d /tmp/godot-templates
+          cp -R /tmp/godot-templates/templates/. \
+            /github/home/.local/share/godot/export_templates/4.4.1.stable/
+
       - name: Import project resources
         run: godot --headless --editor --quit
 
