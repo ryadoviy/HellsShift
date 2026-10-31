@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://cyenc5it5uqcj" path="res://assets/backgrounds/menu_background.png" id="2_fe2o3"]
 [ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="3_1g8jr"]
 [ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="4_m1kxf"]
+[ext_resource type="Texture2D" uid="uid://rjgh25wgl7ql" path="res://assets/sprites/ui/how_to_play_scroll.PNG" id="5_x2yvf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
 bg_color = Color(0.23137255, 0.16862746, 0.32941177, 1)
@@ -31,9 +32,14 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x2yvf"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+
 [node name="MainMenu" type="Control" unique_id=197330378]
 layout_mode = 3
 anchors_preset = 0
+offset_right = 1280.0
+offset_bottom = 720.0
 script = ExtResource("1_sl1te")
 
 [node name="Background" type="ColorRect" parent="." unique_id=1695211202]
@@ -47,13 +53,11 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 1280.0
-offset_bottom = 720.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_fe2o3")
-expand_mode = 1
-stretch_mode = 6
+expand_mode = 3
+stretch_mode = 5
 
 [node name="BackgroundTint" type="ColorRect" parent="." unique_id=1775125428]
 layout_mode = 0
@@ -132,27 +136,34 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_13qdw")
 text = "EXIT"
 
 [node name="DarkOverlay" type="ColorRect" parent="." unique_id=1908204186]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = 1280.0
-offset_bottom = 720.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.7019608)
+color = Color(0.16862746, 0.11372549, 0.23921569, 0.24705882)
 
 [node name="HowToPlayPanel" type="PanelContainer" parent="." unique_id=1899760179]
-visible = false
-layout_mode = 0
-offset_left = 370.0
-offset_top = 210.0
-offset_right = 910.0
-offset_bottom = 561.6667
+propagate_maximum_size = false
+layout_mode = 1
+offset_left = 300.0
+offset_top = 30.0
+offset_right = 900.0
+offset_bottom = 730.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_x2yvf")
+
+[node name="ScrollBackground" type="TextureRect" parent="HowToPlayPanel" unique_id=1008212114]
+layout_mode = 2
+mouse_filter = 0
+texture = ExtResource("5_x2yvf")
+expand_mode = 1
 
 [node name="Instruction" type="Label" parent="HowToPlayPanel" unique_id=298072509]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.2901961, 0.1882353, 0.14509805, 1)
+theme_override_fonts/font = ExtResource("4_m1kxf")
+theme_override_font_sizes/font_size = 18
 text = "HOW TO PLAY
 
 WASD - Move
@@ -167,4 +178,6 @@ Wrong ingredients increase the fire!
 Use water to prevent disaster.
 
 Survive until the timer runs out!"
-autowrap_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3

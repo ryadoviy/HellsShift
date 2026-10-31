@@ -10,18 +10,6 @@ extends CanvasLayer
 @onready var hint_label: Label = $Interface/HintLabel
 
 
-func _ready() -> void:
-	update_display({
-		"score": 300,
-		"time": 165.0,
-		"fire": 40.0,
-		"recipe": "Invisibility",
-		"ingredients": ["mushroom", "eye", "web"],
-		"progress": 1,
-		"item": "mushroom"
-	})
-
-
 func update_display(data: Dictionary) -> void:
 	var score: int = int(data.get("score", 0))
 	var time_left: float = maxf(
