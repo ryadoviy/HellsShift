@@ -66,6 +66,8 @@ func _physics_process(_delta: float) -> void:
 		"move_up",
 		"move_down"
 	)
+	if direction == Vector2.ZERO:
+		direction = _get_keyboard_direction()
 
 	if direction != Vector2.ZERO:
 		facing_direction = direction.normalized()
@@ -76,6 +78,33 @@ func _physics_process(_delta: float) -> void:
 	update_witch_animation(direction)
 	_align_sprite_to_feet()
 	_update_depth()
+
+
+func _get_keyboard_direction() -> Vector2:
+	var keyboard_direction := Vector2.ZERO
+
+	if (
+		Input.is_key_pressed(KEY_A)
+		or Input.is_key_pressed(KEY_LEFT)
+	):
+		keyboard_direction.x -= 1.0
+	if (
+		Input.is_key_pressed(KEY_D)
+		or Input.is_key_pressed(KEY_RIGHT)
+	):
+		keyboard_direction.x += 1.0
+	if (
+		Input.is_key_pressed(KEY_W)
+		or Input.is_key_pressed(KEY_UP)
+	):
+		keyboard_direction.y -= 1.0
+	if (
+		Input.is_key_pressed(KEY_S)
+		or Input.is_key_pressed(KEY_DOWN)
+	):
+		keyboard_direction.y += 1.0
+
+	return keyboard_direction.normalized()
 
 
 func _process(delta: float) -> void:
