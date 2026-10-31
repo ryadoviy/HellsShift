@@ -20,6 +20,7 @@ var spawn_time_left: float = 8.0
 var wave_cooldown_active: bool = false
 var animation_time: float = 0.0
 var wave_spawn_index: int = 0
+var normal_difficulty: bool = false
 
 var ghost_animations: Array[SpriteFrames] = []
 
@@ -79,12 +80,14 @@ func configure(
 	interval: float,
 	limit: int,
 	duration: float,
-	hunt_time: float
+	hunt_time: float,
+	use_opposite_sides: bool = false
 ) -> void:
 	spawn_interval = maxf(1.0, interval)
 	max_ghosts = clampi(limit, 0, 6)
 	block_duration = maxf(0.1, duration)
 	hunt_duration = maxf(0.1, hunt_time)
+	normal_difficulty = use_opposite_sides
 
 
 func reset() -> void:
@@ -212,6 +215,13 @@ func spawn_ghost() -> bool:
 		Vector2(-70.0, 560.0),
 		Vector2(1350.0, 360.0)
 	]
+
+	if normal_difficulty:
+		spawn_layout = [
+			Vector2(-70.0, 360.0),
+			Vector2(1350.0, 360.0)
+		]
+
 	var layout_index: int = mini(
 		spawn_index,
 		spawn_layout.size() - 1
