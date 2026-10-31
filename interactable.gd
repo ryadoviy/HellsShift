@@ -51,7 +51,7 @@ func _ready() -> void:
 			caption.position = Vector2(-65, 40)
 		Kind.SAFE_ZONE:
 			caption.text = "SAFE POINT"
-			caption.position = Vector2(-70, 52)
+			caption.position = Vector2(-70, 32)
 		_:
 			caption.position = Vector2(-65, 28)
 
