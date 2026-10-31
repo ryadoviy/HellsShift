@@ -97,7 +97,7 @@ func _create_water_collision() -> void:
 	body.collision_mask = 0
 
 	var shape := ConvexPolygonShape2D.new()
-	shape.points = _ellipse_points(70.0, 65.0)
+	shape.points = _ellipse_points(55.0, 50.0)
 
 	var collision := CollisionShape2D.new()
 	collision.shape = shape
