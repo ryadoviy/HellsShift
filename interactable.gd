@@ -48,7 +48,7 @@ func _ready() -> void:
 		Kind.WATER:
 			caption.position = Vector2(-65, 40)
 		Kind.SAFE_ZONE:
-			caption.text = "HAUNTED HIDEOUT"
+			caption.text = "SAFE ZONE"
 			caption.position = Vector2(-100, 64)
 		_:
 			caption.position = Vector2(-65, 28)
@@ -192,66 +192,44 @@ func _draw() -> void:
 
 	if kind == Kind.SAFE_ZONE:
 		var safe_rect := Rect2(-100.0, -60.0, 200.0, 120.0)
-		var sanctuary_color := Color("#F06A18")
-		var dark_color := Color("#24162B")
+		var border_color := Color("#9875A6")
+		var dark_color := Color("#211B31")
 		draw_rect(
 			safe_rect,
-			Color(dark_color, 0.9)
+			Color(dark_color, 0.92)
 		)
 		draw_rect(
 			safe_rect,
-			sanctuary_color,
+			border_color,
 			false,
-			6.0
-		)
-		var spikes := PackedVector2Array([
-			Vector2(-100, -60),
-			Vector2(-80, -78),
-			Vector2(-60, -60),
-			Vector2(-40, -78),
-			Vector2(-20, -60),
-			Vector2(0, -78),
-			Vector2(20, -60),
-			Vector2(40, -78),
-			Vector2(60, -60),
-			Vector2(80, -78),
-			Vector2(100, -60)
-		])
-		draw_polyline(
-			spikes,
-			sanctuary_color,
 			4.0
 		)
-		draw_circle(
-			Vector2(-35, -5),
-			14.0,
-			Color("#FF9A2E")
-		)
-		draw_circle(
-			Vector2(35, -5),
-			14.0,
-			Color("#FF9A2E")
-		)
-		draw_line(
-			Vector2(-35, -5),
-			Vector2(-35, 4),
-			dark_color,
-			4.0
-		)
-		draw_line(
-			Vector2(35, -5),
-			Vector2(35, 4),
-			dark_color,
-			4.0
+		draw_rect(
+			Rect2(-86.0, -46.0, 172.0, 92.0),
+			Color(0.35, 0.25, 0.45, 0.35),
+			false,
+			2.0
 		)
 		draw_arc(
 			Vector2.ZERO,
-			42.0,
-			0.2,
-			PI - 0.2,
-			16,
-			sanctuary_color,
-			4.0
+			30.0,
+			0.0,
+			TAU,
+			24,
+			Color("#D0A9D6"),
+			2.0
+		)
+		draw_line(
+			Vector2(-18.0, 0.0),
+			Vector2(18.0, 0.0),
+			Color("#D0A9D6"),
+			2.0
+		)
+		draw_line(
+			Vector2(0.0, -18.0),
+			Vector2(0.0, 18.0),
+			Color("#D0A9D6"),
+			2.0
 		)
 		return
 
