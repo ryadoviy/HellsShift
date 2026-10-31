@@ -118,9 +118,17 @@ func advance(delta: float) -> void:
 
 		match phase:
 			Phase.FLYING:
-				var destination: Vector2 = to_local(
-					target.global_position
-				) + Vector2(0, -25)
+				var destination: Vector2
+				if (
+					player != null
+					and bool(ghost.get("hunts_player", false))
+					and not bool(ghost.get("player_hit", false))
+				):
+					destination = to_local(player.global_position)
+				else:
+					destination = to_local(
+						target.global_position
+					) + Vector2(0, -25)
 
 				position = position.move_toward(
 					destination,
@@ -129,10 +137,19 @@ func advance(delta: float) -> void:
 				ghost["position"] = position
 
 				if position.distance_to(destination) < 2.0:
-					ghost["phase"] = Phase.BLOCKING
-					ghost["time_left"] = block_duration
-					target.set_meta("ghost_blocked", true)
-					target.modulate = Color(0.6, 0.7, 1.0)
+					if (
+						player != null
+						and bool(ghost.get("hunts_player", false))
+						and not bool(ghost.get("player_hit", false))
+					):
+						ghost["player_hit"] = true
+						player.freeze_for(block_duration)
+						ghost["phase"] = Phase.LEAVING
+					else:
+						ghost["phase"] = Phase.BLOCKING
+						ghost["time_left"] = block_duration
+						target.set_meta("ghost_blocked", true)
+						target.modulate = Color(0.6, 0.7, 1.0)
 
 			Phase.BLOCKING:
 				ghost["position"] = to_local(
@@ -172,14 +189,19 @@ func _check_player_collision(ghost: Dictionary) -> void:
 	if player == null or player.is_frozen():
 		return
 
-	var ghost_position: Vector2 = ghost["position"]
+	var sprite := ghost.get("sprite") as AnimatedSprite2D
+	if not is_instance_valid(sprite):
+		return
+
 	var distance: float = player.global_position.distance_to(
-		to_global(ghost_position)
+		sprite.global_position
 	)
 
-	if distance <= 72.0 and not bool(ghost.get("player_hit", false)):
+	if distance <= 110.0 and not bool(ghost.get("player_hit", false)):
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
+		_release_target(ghost)
+		ghost["phase"] = Phase.LEAVING
 
 
 func spawn_ghost() -> bool:
@@ -232,6 +254,7 @@ func spawn_ghost() -> bool:
 		"original_modulate": target.modulate,
 		"released": false,
 		"player_hit": false,
+		"hunts_player": ghosts.size() % 2 == 0,
 		"sprite": sprite
 	})
 
