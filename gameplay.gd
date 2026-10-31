@@ -2,6 +2,8 @@
 extends Node
 class_name Gameplay
 
+const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
+
 const ITEM_NAMES = {
 	&"mushroom": "Mushroom",
 	&"eye": "Eye",
@@ -104,6 +106,7 @@ func _setup_feedback() -> void:
 	feedback_label.size = Vector2(800, 50)
 	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	feedback_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	feedback_label.add_theme_font_override("font", UI_FONT)
 	feedback_label.add_theme_font_size_override("font_size", 28)
 	feedback_label.add_theme_color_override(
 		"font_shadow_color", Color.BLACK

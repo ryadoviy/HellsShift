@@ -1,6 +1,8 @@
 extends Node2D
 class_name GameInteractable
 
+const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
+
 signal interacted(target: GameInteractable, actor: Node)
 
 enum Kind { INGREDIENT, WATER, CAULDRON, FIRE }
@@ -37,6 +39,7 @@ func _ready() -> void:
 	caption.size = Vector2(130, 30)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caption.add_theme_font_override("font", UI_FONT)
 
 	match kind:
 		Kind.CAULDRON:
