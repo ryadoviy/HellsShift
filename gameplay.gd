@@ -369,10 +369,16 @@ func _on_recipe_completed() -> void:
 
 	_flash_cauldron(Color(0.7, 1.0, 0.5))
 
-	_show_feedback(
-		"POTION COMPLETE!",
-		Color(0.7, 1.0, 0.5)
-	)
+	if manager.water_unlocked:
+		_show_feedback(
+			"GO GET WATER AND EXTINGUISH THE FIRE!",
+			Color(0.5, 0.85, 1.0)
+		)
+	else:
+		_show_feedback(
+			"POTION COMPLETE!",
+			Color(0.7, 1.0, 0.5)
+		)
 
 
 func _show_feedback(message: String, color: Color) -> void:
