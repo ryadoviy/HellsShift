@@ -1,6 +1,8 @@
 extends Node
 class_name Gameplay
 
+signal water_used
+
 const ITEM_NAMES = {
 	&"mushroom": "Mushroom",
 	&"eye": "Eye",
@@ -162,6 +164,7 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 
 		if item_id == &"water":
 			manager.use_water()
+			water_used.emit()
 			_flash_cauldron(Color(0.5, 0.8, 1.0))
 			_show_feedback("WATER USED", Color(0.5, 0.85, 1.0))
 		else:

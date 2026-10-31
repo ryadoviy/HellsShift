@@ -1,0 +1,10 @@
+Additional sound effects from SFXMint — CC0 1.0.
+
+Ingredient: https://sfxmint.com/sounds/water-plop-04
+Potion complete: https://sfxmint.com/sounds/feedback-success-02
+Wrong ingredient: https://sfxmint.com/sounds/feedback-error-53
+Water: https://sfxmint.com/sounds/water-pour-55
+Ghost: https://sfxmint.com/sounds/ghost-moan-06
+Fire: https://sfxmint.com/sounds/gentle-fire-crackling-01
+
+License: https://creativecommons.org/publicdomain/zero/1.0/

@@ -1,6 +1,8 @@
 extends Node2D
 class_name GhostSabotage
 
+signal ghost_spawned
+
 enum Phase { FLYING, BLOCKING, LEAVING }
 
 # Учасник №3 може змінювати ці параметри через configure().
@@ -155,6 +157,7 @@ func spawn_ghost() -> bool:
 	})
 
 	queue_redraw()
+	ghost_spawned.emit()
 	return true
 
 
