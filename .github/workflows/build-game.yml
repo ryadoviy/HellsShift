@@ -29,7 +29,7 @@ jobs:
       - name: Install Godot export templates
         run: |
           apt-get update
-          apt-get install -y curl unzip
+          apt-get install -y curl unzip openjdk-17-jdk
           curl -L \
             -o /tmp/godot-export-templates.tpz \
             https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
@@ -37,6 +37,27 @@ jobs:
           unzip -q -o /tmp/godot-export-templates.tpz -d /tmp/godot-templates
           cp -R /tmp/godot-templates/templates/. \
             /github/home/.local/share/godot/export_templates/4.4.1.stable/
+
+      - name: Configure Android export
+        run: |
+          mkdir -p /github/home/.android /github/home/.config/godot
+          keytool -genkeypair \
+            -keystore /github/home/.android/debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -validity 10000
+          java_home="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
+          cat > /github/home/.config/godot/editor_settings-4.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+
+          export/android/java_sdk_path = "$java_home"
+          export/android/android_sdk_path = "/opt/android-sdk"
+          export/android/debug_keystore = "/github/home/.android/debug.keystore"
+          EOF
 
       - name: Import project resources
         run: godot --headless --editor --quit
