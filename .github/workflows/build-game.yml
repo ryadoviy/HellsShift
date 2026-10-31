@@ -38,47 +38,17 @@ jobs:
           cp -R /tmp/godot-templates/templates/. \
             /github/home/.local/share/godot/export_templates/4.4.1.stable/
 
-      - name: Configure Android export
-        run: |
-          mkdir -p /github/home/.android /github/home/.config/godot
-          keytool -genkeypair \
-            -keystore /github/home/.android/debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US" \
-            -validity 10000
-          java_home="$(dirname "$(dirname "$(readlink -f "$(command -v javac)")")")"
-          cat > /github/home/.config/godot/editor_settings-4.tres <<EOF
-          [gd_resource type="EditorSettings" format=3]
-
-          [resource]
-
-          export/android/java_sdk_path = "$java_home"
-          export/android/android_sdk_path = "/opt/android-sdk"
-          export/android/debug_keystore = "/github/home/.android/debug.keystore"
-          EOF
-
       - name: Import project resources
         run: godot --headless --editor --quit
 
       - name: Prepare build directories
-        run: mkdir -p build/windows build/android
+        run: mkdir -p build/windows
 
       - name: Build Windows app
         run: godot --headless --path . --export-release "Windows Desktop" build/windows/HellsShift.exe
-
-      - name: Build Android APK
-        run: godot --headless --path . --export-debug "Android" build/android/HellsShift.apk
 
       - name: Upload Windows app
         uses: actions/upload-artifact@v4
         with:
           name: HellsShift-Windows
           path: build/windows/
-
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: HellsShift-Android
-          path: build/android/HellsShift.apk
