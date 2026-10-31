@@ -1,4 +1,3 @@
-
 extends Node2D
 class_name GameInteractable
 
@@ -12,69 +11,70 @@ enum Kind { INGREDIENT, WATER, CAULDRON }
 @export var object_color: Color = Color(0.7, 0.3, 0.8)
 @export var interaction_distance: float = 70.0
 
+const CAULDRON_VISUAL_CENTER := Vector2(0, -40)
+const CAULDRON_BODY_CENTER := Vector2(0, 20)
+
 var visual_sprite: Sprite2D = null
 
 
 func _ready() -> void:
 	add_to_group("interactables")
-
-	if kind == Kind.INGREDIENT or kind == Kind.CAULDRON or kind == Kind.WATER:
-		_setup_visual_sprite()
-
+	_setup_visual_sprite()
 
 	if kind == Kind.CAULDRON:
+		z_index = 4
 		_setup_cauldron_collision()
+	else:
+		z_index = 1
+
+		if get_meta("dropped", false):
+			_setup_dropped_item_collision()
 
 	var caption := Label.new()
 	caption.text = display_name
-
-	
-	if kind == Kind.CAULDRON:
-		caption.position = Vector2(-65, 52)
-	elif kind == Kind.WATER:
-		caption.position = Vector2(-55, 40)
-	else:
-		caption.position = Vector2(-65, 28)
-
-
 	caption.size = Vector2(130, 30)
 	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	match kind:
+		Kind.CAULDRON:
+			caption.position = Vector2(-65, 90)
+		Kind.WATER:
+			caption.position = Vector2(-65, 40)
+		_:
+			caption.position = Vector2(-65, 28)
 
 	add_child(caption)
 	queue_redraw()
 
 
 func _setup_visual_sprite() -> void:
-	var image_path := ""
+	var image_path: String = ""
 	var target_size: float = 48.0
 
 	match kind:
 		Kind.INGREDIENT:
-			image_path = (
-                "res://assets/sprites/ingredients/%s.png"
-				% str(item_id)
-			)
-			target_size = 48.0
+			if item_id == &"water":
+				image_path = "res://assets/sprites/objects/water.PNG"
+			else:
+				image_path = (
+					"res://assets/sprites/ingredients/%s.png"
+					% str(item_id)
+				)
 
 		Kind.CAULDRON:
 			image_path = "res://assets/sprites/objects/cauldron.png"
 			target_size = 250.0
-		
+
 		Kind.WATER:
-			image_path = "res://assets/sprites/objects/water.png"
+			image_path = "res://assets/sprites/objects/water.PNG"
 			target_size = 150.0
-
-
-		_:
-			return
 
 	if not ResourceLoader.exists(image_path):
 		push_warning("Image not found: " + image_path)
 		return
 
 	var texture := load(image_path) as Texture2D
-
 	if texture == null:
 		return
 
@@ -89,14 +89,12 @@ func _setup_visual_sprite() -> void:
 	)
 
 	if longest_side > 0.0:
-		var scale_factor: float = target_size / longest_side
-		visual_sprite.scale = Vector2(
-			scale_factor,
-			scale_factor
+		visual_sprite.scale = Vector2.ONE * (
+			target_size / longest_side
 		)
 
 	if kind == Kind.CAULDRON:
-		visual_sprite.position = Vector2(0, -40)
+		visual_sprite.position = CAULDRON_VISUAL_CENTER
 	elif kind == Kind.WATER:
 		visual_sprite.position = Vector2(0, -18)
 
@@ -106,25 +104,66 @@ func _setup_visual_sprite() -> void:
 func _setup_cauldron_collision() -> void:
 	var body := StaticBody2D.new()
 	body.name = "CauldronBody"
-
+	body.position = CAULDRON_BODY_CENTER
 	body.collision_layer = 1
 	body.collision_mask = 0
 
 	var collision := CollisionShape2D.new()
 	collision.name = "CauldronCollision"
-	collision.position = Vector2(0, -120)
 
-	var shape := CircleShape2D.new()
-	shape.radius = 80.0
+	var shape := ConvexPolygonShape2D.new()
+	var points := PackedVector2Array()
 
+	for index in range(24):
+		var angle: float = TAU * float(index) / 24.0
+		points.append(Vector2(
+			cos(angle) * 100.0,
+			sin(angle) * 65.0
+		))
+
+	shape.points = points
 	collision.shape = shape
+
 	body.add_child(collision)
 	add_child(body)
 
+
+func _setup_dropped_item_collision() -> void:
+	var body := StaticBody2D.new()
+	body.name = "DroppedItemBody"
+	body.collision_layer = 1
+	body.collision_mask = 0
+
+	var shape := CircleShape2D.new()
+	shape.radius = 20.0
+
+	var collision := CollisionShape2D.new()
+	collision.name = "DroppedItemCollision"
+	collision.shape = shape
+
+	body.add_child(collision)
+	add_child(body)
+
+
+func get_interaction_position() -> Vector2:
+	if kind == Kind.CAULDRON:
+		return to_global(CAULDRON_BODY_CENTER)
+
+	return global_position
+
+
 func can_interact(actor: Node2D) -> bool:
+	if not is_instance_valid(actor) or not is_visible_in_tree():
+		return false
+
+	var allowed_distance: float = interaction_distance
+
+	if kind == Kind.CAULDRON:
+		allowed_distance = maxf(allowed_distance, 150.0)
+
 	return (
-		global_position.distance_to(actor.global_position)
-		<= interaction_distance
+		get_interaction_position().distance_to(actor.global_position)
+		<= allowed_distance
 	)
 
 
@@ -137,22 +176,12 @@ func _draw() -> void:
 	if visual_sprite != null:
 		return
 
-	var radius: float = (
-		35.0 if kind == Kind.CAULDRON else 20.0
-	)
+	var radius: float = 20.0
+	var center := Vector2.ZERO
 
-	draw_circle(
-		Vector2.ZERO,
-		radius,
-		object_color
-	)
+	if kind == Kind.CAULDRON:
+		radius = 65.0
+		center = CAULDRON_VISUAL_CENTER
 
-	draw_arc(
-		Vector2.ZERO,
-		radius,
-		0.0,
-		TAU,
-		40,
-		Color.WHITE,
-		2.0
-	)
+	draw_circle(center, radius, object_color)
+	draw_arc(center, radius, 0.0, TAU, 40, Color.WHITE, 2.0)
