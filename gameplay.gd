@@ -85,13 +85,6 @@ func setup(game_manager: Node) -> void:
 		Color(0.25, 0.85, 0.75)
 	)
 
-	create_object(
-		GameInteractable.Kind.SAFE_ZONE,
-		&"",
-		Vector2(1160, 300),
-		Color(0.25, 0.85, 0.75)
-	)
-
 	# Невидима точка взаємодії зі справжнім вогнем.
 	fire_target = create_object(
 		GameInteractable.Kind.FIRE,

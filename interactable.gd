@@ -48,7 +48,8 @@ func _ready() -> void:
 		Kind.WATER:
 			caption.position = Vector2(-65, 40)
 		Kind.SAFE_ZONE:
-			caption.position = Vector2(-65, 45)
+			caption.text = "SAFE ZONE"
+			caption.position = Vector2(-75, 58)
 		_:
 			caption.position = Vector2(-65, 28)
 
@@ -187,6 +188,24 @@ func interact(actor: Node2D) -> void:
 
 func _draw() -> void:
 	if visual_sprite != null:
+		return
+
+	if kind == Kind.SAFE_ZONE:
+		var safe_rect := Rect2(-90.0, -55.0, 180.0, 110.0)
+		draw_rect(safe_rect, Color(object_color, 0.32))
+		draw_rect(safe_rect, object_color, false, 4.0)
+		draw_line(
+			Vector2(-90.0, 0.0),
+			Vector2(90.0, 0.0),
+			Color(1.0, 1.0, 1.0, 0.22),
+			2.0
+		)
+		draw_line(
+			Vector2(0.0, -55.0),
+			Vector2(0.0, 55.0),
+			Color(1.0, 1.0, 1.0, 0.22),
+			2.0
+		)
 		return
 
 	var radius: float = 20.0
