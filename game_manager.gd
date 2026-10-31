@@ -147,6 +147,7 @@ func add_score(amount: int) -> void:
 
 
 func on_recipe_completed() -> void:
+	print("POTION COMPLETED!")
 	potions_brewed += 1
 	add_score(100)
 
@@ -192,18 +193,53 @@ func _set_state(new_state: GameState) -> void:
 	_update_hud()
 
 
+
 func _update_hud() -> void:
 	if not is_node_ready():
 		return
+
+	var recipe_name: String = ""
+	var ingredient_names: Array = []
+	var recipe_progress: int = 0
+	var held_item_name: String = ""
+
+	if gameplay != null and gameplay.recipes != null:
+		var recipes: RecipeManager = gameplay.recipes
+
+		if not recipes.current_recipe.is_empty():
+			recipe_name = str(
+				recipes.current_recipe.get("name", "")
+			)
+
+			var ingredient_ids: Array = recipes.current_recipe.get(
+				"ingredients", []
+			)
+
+			for item_id in ingredient_ids:
+				ingredient_names.append(
+					str(Gameplay.ITEM_NAMES.get(item_id, item_id))
+				)
+
+			recipe_progress = recipes.ingredient_index
+
+	var current_player: CorePlayer = player as CorePlayer
+
+	if current_player != null and current_player.inventory != null:
+		var held_item: StringName = current_player.inventory.held_item
+
+		if held_item != &"":
+			held_item_name = str(
+				Gameplay.ITEM_NAMES.get(held_item, held_item)
+			)
 
 	var hud_data: Dictionary = {
 		"score": score,
 		"time": time_left,
 		"fire": fire.level,
-		"recipe": "",
-		"ingredients": [],
-		"progress": 0,
-		"item": ""
+		"recipe": recipe_name,
+		"ingredients": ingredient_names,
+		"progress": recipe_progress,
+		"item": held_item_name
 	}
 
 	custom_hud.update_display(hud_data)

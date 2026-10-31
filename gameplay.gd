@@ -50,7 +50,7 @@ func setup(game_manager: Node) -> void:
 		create_object(
 			GameInteractable.Kind.INGREDIENT,
 			item_id,
-			Vector2(160 + index * 155, 270),
+			Vector2(400 + index * 90, 170),
 			Color(0.65, 0.3, 0.8)
 		)
 
@@ -92,6 +92,8 @@ func create_object(
 	target.position = object_position
 	target.object_color = color
 	target.set_meta("dropped", dropped)
+	if kind == GameInteractable.Kind.CAULDRON:
+		target.interaction_distance = 110.0
 
 	if kind == GameInteractable.Kind.CAULDRON:
 		target.display_name = "Cauldron"
@@ -103,6 +105,7 @@ func create_object(
 	return target
 
 
+
 func on_interacted(target: GameInteractable, actor: Node) -> void:
 	if manager.state != GameManager.GameState.PLAYING:
 		return
@@ -111,13 +114,18 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 		return
 
 	if target.kind == GameInteractable.Kind.CAULDRON:
+		print("CAULDRON INTERACTION")
+
 		if not player.inventory.has_item():
+			print("Cauldron: hands are empty")
 			return
 
 		var item_id := player.inventory.remove_item()
+		print("ADDED TO CAULDRON: ", item_id)
 
 		if item_id == &"water":
 			manager.use_water()
+			print("WATER USED")
 		else:
 			recipes.add_ingredient(item_id)
 
@@ -127,7 +135,6 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 		if taken and target.get_meta("dropped", false):
 			target.hide()
 			target.queue_free()
-
 
 func on_item_dropped(item_id: StringName, drop_position: Vector2) -> void:
 	# Залишаємо предмет усередині стін кімнати.

@@ -1,9 +1,10 @@
 [gd_scene format=3 uid="uid://bnlssdjewpqfy"]
 
 [ext_resource type="Script" uid="uid://bdw5vajm6wsl" path="res://game_manager.gd" id="1_manager"]
-[ext_resource type="PackedScene" path="res://laboratory.tscn" id="2_lab"]
-[ext_resource type="PackedScene" path="res://fire.tscn" id="3_fire"]
+[ext_resource type="PackedScene" uid="uid://cy23rg0ae5j3k" path="res://laboratory.tscn" id="2_lab"]
+[ext_resource type="PackedScene" uid="uid://bp0ye8ovvopa1" path="res://fire.tscn" id="3_fire"]
 [ext_resource type="Script" uid="uid://dqer66yytgd0y" path="res://modifier_manager.gd" id="4_modifier"]
+[ext_resource type="Texture2D" uid="uid://c7dk0bohajv22" path="res://assets/sprites/player/witch_down.png" id="5_efxa6"]
 [ext_resource type="Script" uid="uid://gx5ydo5uwntr" path="res://player.gd" id="5_player"]
 [ext_resource type="Resource" path="res://game_config_normal.tres" id="6_config"]
 [ext_resource type="PackedScene" uid="uid://cdfx64eo2c0he" path="res://scenes/ui/main_menu.tscn" id="7_4c57u"]
@@ -32,6 +33,7 @@ config = ExtResource("6_config")
 [node name="Laboratory" parent="." unique_id=1250697022 instance=ExtResource("2_lab")]
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=1181706638]
+z_index = 5
 position = Vector2(640, 560)
 script = ExtResource("5_player")
 
@@ -42,8 +44,13 @@ polygon = PackedVector2Array(-20, 24, -20, -14, 0, -28, 20, -14, 20, 24)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=968646843]
 shape = SubResource("Capsule_player")
 
+[node name="WitchSprite" type="Sprite2D" parent="Player" unique_id=147773135]
+position = Vector2(0, -0.15)
+scale = Vector2(0.25, 0.25)
+texture = ExtResource("5_efxa6")
+
 [node name="Fire" parent="." unique_id=1103042418 instance=ExtResource("3_fire")]
-position = Vector2(1100, 530)
+position = Vector2(1000, 520)
 
 [node name="ModifierManager" type="Node" parent="." unique_id=1723326386]
 script = ExtResource("4_modifier")
