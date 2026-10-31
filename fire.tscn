@@ -1,18 +1,20 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://bp0ye8ovvopa1"]
 
-[ext_resource path="res://fire.gd" type="Script" id="1_fire"]
+[ext_resource type="Script" uid="uid://c3gppb1mkrt00" path="res://fire.gd" id="1_fire"]
+[ext_resource type="Texture2D" uid="uid://ctgou22sulcaq" path="res://assets/sprites/objects/fire.PNG" id="2_5ltu8"]
 
-[sub_resource type="Gradient" id="Gradient_fire"]
-colors = PackedColorArray(1, 0.18, 0.02, 1, 1, 0.8, 0.05, 0.2)
-
-[node name="Fire" type="Node2D"]
+[node name="Fire" type="Node2D" unique_id=1267115820]
 script = ExtResource("1_fire")
 
-[node name="Flame" type="Polygon2D" parent="."]
-polygon = PackedVector2Array(-42, 42, -30, -10, -12, 4, -15, -48, 0, -22, 16, -70, 24, -20, 45, 10, 42, 42)
+[node name="Flame" type="Polygon2D" parent="." unique_id=1410212207]
+visible = false
 color = Color(1, 0.3, 0.04, 0.95)
+polygon = PackedVector2Array(-42, 42, -30, -10, -12, 4, -15, -48, 0, -22, 16, -70, 24, -20, 45, 10, 42, 42)
 
-[node name="PointLight2D" type="PointLight2D" parent="."]
-energy = 0.55
+[node name="PointLight2D" type="PointLight2D" parent="." unique_id=1053542037]
 color = Color(1, 0.35, 0.08, 1)
+energy = 0.55
 texture_scale = 2.0
+
+[node name="FireSprite" type="Sprite2D" parent="." unique_id=1602563547]
+texture = ExtResource("2_5ltu8")
