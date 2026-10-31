@@ -28,6 +28,7 @@ func _ready() -> void:
 func setup(gameplay_objects: Node2D) -> void:
 	objects = gameplay_objects
 	z_index = 6
+	visible = true
 
 	if ghost_animations.is_empty():
 		_load_ghost_animations()
@@ -87,7 +88,7 @@ func reset() -> void:
 		_remove_ghost_sprite(ghost)
 
 	ghosts.clear()
-	spawn_time_left = minf(8.0, spawn_interval)
+	spawn_time_left = minf(3.0, spawn_interval)
 	animation_time = 0.0
 	queue_redraw()
 
