@@ -237,6 +237,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func interact_with_nearest() -> void:
 	var nearest_item: GameInteractable = null
 	var nearest_item_distance: float = INF
+	var nearby_fire: GameInteractable = null
+	var fire_distance: float = INF
 	var nearby_action: GameInteractable = null
 	var action_distance: float = INF
 
@@ -254,6 +256,15 @@ func interact_with_nearest() -> void:
 		)
 
 		if inventory.has_item():
+			if (
+				inventory.held_item == &"water"
+				and target.kind == GameInteractable.Kind.FIRE
+				and distance < fire_distance
+			):
+				nearby_fire = target
+				fire_distance = distance
+				continue
+
 			var can_use_item: bool = (
 				target.kind == GameInteractable.Kind.CAULDRON
 				or (
@@ -273,7 +284,9 @@ func interact_with_nearest() -> void:
 					nearest_item_distance = distance
 
 	if inventory.has_item():
-		if nearby_action != null:
+		if nearby_fire != null:
+			nearby_fire.interact(self)
+		elif nearby_action != null:
 			nearby_action.interact(self)
 	else:
 		if nearest_item != null:
