@@ -38,11 +38,8 @@ jobs:
           cp -R /tmp/godot-templates/templates/. \
             /github/home/.local/share/godot/export_templates/4.4.1.stable/
           npm install --global rcedit
-          rcedit_path="$(command -v rcedit || true)"
-          if [ -z "$rcedit_path" ]; then
-            rcedit_path="$(find /usr/local/lib/node_modules /usr/lib/node_modules \
-              -type f -name rcedit 2>/dev/null | head -n 1)"
-          fi
+          rcedit_path="$(find /usr/local/lib/node_modules /usr/lib/node_modules \
+            -type f -name 'rcedit-x64.exe' 2>/dev/null | head -n 1)"
           test -n "$rcedit_path"
           echo "RCEDIT_PATH=$rcedit_path" >> "$GITHUB_ENV"
 
