@@ -1,7 +1,33 @@
 [gd_scene format=3 uid="uid://bp0ye8ovvopa1"]
 
 [ext_resource type="Script" uid="uid://c3gppb1mkrt00" path="res://fire.gd" id="1_fire"]
+[ext_resource type="Texture2D" uid="uid://bf8q16geuvmy0" path="res://assets/sprites/objects/fire_1.png" id="2_icfi2"]
 [ext_resource type="Texture2D" uid="uid://ctgou22sulcaq" path="res://assets/sprites/objects/fire.png" id="2_texture"]
+[ext_resource type="Texture2D" uid="uid://ps2tjwdt273i" path="res://assets/sprites/objects/fire_2.png" id="4_eo6dx"]
+[ext_resource type="Texture2D" uid="uid://bn68f7bifebye" path="res://assets/sprites/objects/fire_3.png" id="4_r2yji"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xrivr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_icfi2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_texture")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_r2yji")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_texture")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_eo6dx")
+}],
+"loop": 1,
+"name": &"burn",
+"speed": 8.0
+}]
 
 [node name="Fire" type="Node2D" unique_id=1267115820]
 script = ExtResource("1_fire")
@@ -11,8 +37,9 @@ visible = false
 color = Color(1, 0.3, 0.04, 0.95)
 polygon = PackedVector2Array(-42, 42, -30, -10, -12, 4, -15, -48, 0, -22, 16, -70, 24, -20, 45, 10, 42, 42)
 
-[node name="FireSprite" type="Sprite2D" parent="." unique_id=1602563547]
-texture = ExtResource("2_texture")
+[node name="FireSprite" type="AnimatedSprite2D" parent="." unique_id=1455234919]
+sprite_frames = SubResource("SpriteFrames_xrivr")
+animation = &"burn"
 
 [node name="PointLight2D" type="PointLight2D" parent="." unique_id=1053542037]
 color = Color(1, 0.35, 0.08, 1)

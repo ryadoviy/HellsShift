@@ -10,7 +10,7 @@ signal fire_maxed
 
 @onready var flame: Polygon2D = get_node_or_null("Flame")
 @onready var light: PointLight2D = get_node_or_null("PointLight2D")
-@onready var fire_sprite: Sprite2D = get_node_or_null("FireSprite")
+@onready var fire_sprite: AnimatedSprite2D = get_node_or_null("FireSprite")
 
 const SPREAD_POSITIONS := [
 	Vector2(-260.0, -35.0),
@@ -26,7 +26,7 @@ const SPREAD_LEVELS := [25.0, 40.0, 55.0, 70.0, 85.0, 95.0]
 var animation_time: float = 0.0
 var effects_visible: bool = false
 var _has_emitted_max: bool = false
-var spread_sprites: Array[Sprite2D] = []
+var spread_sprites: Array[AnimatedSprite2D] = []
 
 
 func _ready() -> void:
@@ -34,9 +34,10 @@ func _ready() -> void:
 
 	if flame != null:
 		flame.hide()
-
 	if fire_sprite != null:
 		fire_sprite.modulate = Color.WHITE
+		fire_sprite.animation = &"burn"
+		fire_sprite.play()
 
 	_create_spread_flames()
 	set_level(level)
@@ -71,16 +72,18 @@ func set_level(value: float) -> void:
 
 
 func _create_spread_flames() -> void:
-	if fire_sprite == null or fire_sprite.texture == null:
+	if fire_sprite == null or fire_sprite.sprite_frames == null:
 		return
 
 	for index in range(SPREAD_POSITIONS.size()):
-		var spread_sprite := Sprite2D.new()
+		var spread_sprite := AnimatedSprite2D.new()
 		spread_sprite.name = "SpreadFire%d" % index
-		spread_sprite.texture = fire_sprite.texture
+		spread_sprite.sprite_frames = fire_sprite.sprite_frames
+		spread_sprite.animation = &"burn"
 		spread_sprite.position = SPREAD_POSITIONS[index]
 		spread_sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		spread_sprite.z_index = fire_sprite.z_index
+		spread_sprite.play()
 		add_child(spread_sprite)
 		spread_sprites.append(spread_sprite)
 
@@ -88,23 +91,25 @@ func _create_spread_flames() -> void:
 func _update_spread_flames() -> void:
 	for index in range(spread_sprites.size()):
 		var spread_sprite := spread_sprites[index]
-		if not is_instance_valid(spread_sprite):
-			continue
-
 		var unlocked: bool = level >= SPREAD_LEVELS[index]
-		spread_sprite.modulate = Color(
-			1.0,
-			1.0,
-			1.0,
-			1.0 if unlocked else 0.0
-		)
+		spread_sprite.modulate.a = 1.0 if unlocked else 0.0
 
 		if unlocked:
-			var size: float = lerpf(105.0, 185.0, level / 100.0)
-			var texture_size: Vector2 = spread_sprite.texture.get_size()
+			var texture := spread_sprite.sprite_frames.get_frame_texture(
+				&"burn",
+				0
+			)
+			if texture == null:
+				continue
+
 			var longest_side: float = maxf(
-				texture_size.x,
-				texture_size.y
+				texture.get_width(),
+				texture.get_height()
+			)
+			var size: float = lerpf(
+				105.0,
+				185.0,
+				level / 100.0
 			)
 
 			if longest_side > 0.0:
@@ -114,13 +119,29 @@ func _update_spread_flames() -> void:
 
 
 func update_fire_visual() -> void:
-	if fire_sprite == null or fire_sprite.texture == null:
+	if fire_sprite == null:
+		return
+
+	if fire_sprite.sprite_frames == null:
+		return
+
+	if not fire_sprite.sprite_frames.has_animation(&"burn"):
 		return
 
 	fire_sprite.visible = level > 0.0
-	fire_sprite.modulate = Color.WHITE
 
-	var texture_size: Vector2 = fire_sprite.texture.get_size()
+	var texture: Texture2D = (
+		fire_sprite.sprite_frames.get_frame_texture(
+			&"burn",
+			0
+		)
+	)
+
+	if texture == null:
+		return
+
+	var texture_size: Vector2 = texture.get_size()
+
 	var longest_side: float = maxf(
 		texture_size.x,
 		texture_size.y
@@ -139,7 +160,6 @@ func update_fire_visual() -> void:
 		target_size / longest_side
 	)
 
-
 func _process(delta: float) -> void:
 	var manager := get_parent() as GameManager
 
@@ -154,65 +174,22 @@ func _process(delta: float) -> void:
 	if manager.state == GameManager.GameState.PLAYING:
 		animation_time += delta
 
-	_animate_flames()
-	queue_redraw()
+	if fire_sprite != null:
+		if manager.state == GameManager.GameState.PLAYING and level > 0.0:
+			fire_sprite.speed_scale = 1.0
+		else:
+			fire_sprite.speed_scale = 0.0
 
+		for index in range(spread_sprites.size()):
+			var spread_sprite := spread_sprites[index]
+			spread_sprite.speed_scale = fire_sprite.speed_scale
+			if spread_sprite.modulate.a > 0.0:
+				var phase: float = float(index) * 1.7
+				spread_sprite.rotation = sin(
+					animation_time * 2.5 + phase
+				) * 0.08
 
-func _animate_flames() -> void:
-	if fire_sprite == null or fire_sprite.texture == null:
-		return
-
-	var texture_size: Vector2 = fire_sprite.texture.get_size()
-	var longest_side: float = maxf(
-		texture_size.x,
-		texture_size.y
-	)
-
-	if longest_side <= 0.0:
-		return
-
-	var main_pulse: float = sin(animation_time * 7.0) * 0.045
-	var main_sway: float = sin(animation_time * 4.0) * 0.035
-	var main_size: float = lerpf(
-		min_fire_size,
-		max_fire_size,
-		level / 100.0
-	)
-
-	fire_sprite.scale = Vector2(
-		(main_size / longest_side) * (1.0 - main_sway),
-		(main_size / longest_side) * (1.0 + main_pulse)
-	)
-	fire_sprite.rotation = sin(animation_time * 3.0) * 0.025
-	fire_sprite.position = Vector2(
-		sin(animation_time * 5.0) * 3.0,
-		cos(animation_time * 4.0) * 2.0
-	)
-
-	for index in range(spread_sprites.size()):
-		var spread_sprite := spread_sprites[index]
-		if not is_instance_valid(spread_sprite):
-			continue
-
-		if spread_sprite.modulate.a <= 0.0:
-			continue
-
-		var spread_size: float = lerpf(
-			105.0,
-			185.0,
-			level / 100.0
-		)
-		var phase: float = float(index) * 1.7
-		var pulse: float = sin(animation_time * 6.0 + phase) * 0.06
-		var sway: float = sin(animation_time * 3.5 + phase) * 0.04
-
-		spread_sprite.scale = Vector2(
-			(spread_size / longest_side) * (1.0 - sway),
-			(spread_size / longest_side) * (1.0 + pulse)
-		)
-		spread_sprite.rotation = sin(
-			animation_time * 2.5 + phase
-		) * 0.08
+		queue_redraw()
 
 
 func _room_point(point: Vector2) -> Vector2:
