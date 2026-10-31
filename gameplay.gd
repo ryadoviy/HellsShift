@@ -16,8 +16,14 @@ var manager: Node
 var player: CorePlayer
 var recipes: RecipeManager
 var objects: Node2D
-var recipe_label: Label
-var inventory_label: Label
+var cauldron: GameInteractable
+
+var feedback_layer: CanvasLayer
+var feedback_label: Label
+var feedback_time_left: float = 0.0
+var flash_time_left: float = 0.0
+var flash_color := Color.WHITE
+var effect_time: float = 0.0
 
 
 func setup(game_manager: Node) -> void:
@@ -31,13 +37,12 @@ func setup(game_manager: Node) -> void:
 	objects.name = "GameplayObjects"
 	manager.add_child(objects)
 
-	recipe_label = create_label(Vector2(75, 175), Vector2(1130, 65))
-	inventory_label = create_label(Vector2(75, 570), Vector2(1130, 35))
+	_setup_feedback()
 
-	recipes.recipe_changed.connect(update_recipe)
-	recipes.recipe_completed.connect(manager.on_recipe_completed)
-	recipes.ingredient_wrong.connect(manager.on_ingredient_wrong)
-	player.inventory.item_changed.connect(update_inventory)
+	recipes.ingredient_correct.connect(_on_ingredient_correct)
+	recipes.ingredient_wrong.connect(_on_ingredient_wrong)
+	recipes.brewing_started.connect(_on_brewing_started)
+	recipes.recipe_completed.connect(_on_recipe_completed)
 	player.item_dropped.connect(on_item_dropped)
 
 	var ingredient_ids: Array[StringName] = [
@@ -46,15 +51,14 @@ func setup(game_manager: Node) -> void:
 	]
 
 	for index in range(ingredient_ids.size()):
-		var item_id: StringName = ingredient_ids[index]
 		create_object(
 			GameInteractable.Kind.INGREDIENT,
-			item_id,
+			ingredient_ids[index],
 			Vector2(400 + index * 90, 170),
 			Color(0.65, 0.3, 0.8)
 		)
 
-	create_object(
+	cauldron = create_object(
 		GameInteractable.Kind.CAULDRON,
 		&"",
 		Vector2(640, 420),
@@ -69,14 +73,24 @@ func setup(game_manager: Node) -> void:
 	)
 
 
-func create_label(label_position: Vector2, label_size: Vector2) -> Label:
-	var label := Label.new()
-	label.position = label_position
-	label.size = label_size
-	label.add_theme_font_size_override("font_size", 20)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	manager.get_node("HUD").add_child(label)
-	return label
+func _setup_feedback() -> void:
+	feedback_layer = CanvasLayer.new()
+	feedback_layer.name = "GameplayFeedback"
+	feedback_layer.layer = 5
+	add_child(feedback_layer)
+
+	feedback_label = Label.new()
+	feedback_label.position = Vector2(240, 240)
+	feedback_label.size = Vector2(800, 50)
+	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	feedback_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	feedback_label.add_theme_font_size_override("font_size", 28)
+	feedback_label.add_theme_color_override(
+		"font_shadow_color", Color.BLACK
+	)
+	feedback_label.add_theme_constant_override("shadow_offset_x", 2)
+	feedback_label.add_theme_constant_override("shadow_offset_y", 2)
+	feedback_layer.add_child(feedback_label)
 
 
 func create_object(
@@ -92,18 +106,16 @@ func create_object(
 	target.position = object_position
 	target.object_color = color
 	target.set_meta("dropped", dropped)
-	if kind == GameInteractable.Kind.CAULDRON:
-		target.interaction_distance = 110.0
 
 	if kind == GameInteractable.Kind.CAULDRON:
 		target.display_name = "Cauldron"
+		target.interaction_distance = 150.0
 	else:
 		target.display_name = str(ITEM_NAMES.get(item_id, item_id))
 
 	target.interacted.connect(on_interacted)
 	objects.add_child(target)
 	return target
-
 
 
 func on_interacted(target: GameInteractable, actor: Node) -> void:
@@ -114,30 +126,39 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 		return
 
 	if target.kind == GameInteractable.Kind.CAULDRON:
-		print("CAULDRON INTERACTION")
-
 		if not player.inventory.has_item():
-			print("Cauldron: hands are empty")
+			if not recipes.is_brewing:
+				_show_feedback("TAKE AN INGREDIENT FIRST", Color.WHITE)
 			return
 
-		var item_id := player.inventory.remove_item()
-		print("ADDED TO CAULDRON: ", item_id)
+		var held_item: StringName = player.inventory.held_item
+
+		# Перевіряємо зайнятість ДО вилучення предмета.
+		if recipes.is_brewing and held_item != &"water":
+			_show_feedback("CAULDRON IS MIXING...", Color(1.0, 0.85, 0.4))
+			return
+
+		var item_id: StringName = player.inventory.remove_item()
 
 		if item_id == &"water":
 			manager.use_water()
-			print("WATER USED")
+			_flash_cauldron(Color(0.5, 0.8, 1.0))
+			_show_feedback("WATER USED", Color(0.5, 0.85, 1.0))
 		else:
 			recipes.add_ingredient(item_id)
 
 	else:
-		var taken := player.inventory.take_item(target.item_id)
+		var taken: bool = player.inventory.take_item(target.item_id)
 
-		if taken and target.get_meta("dropped", false):
-			target.hide()
-			target.queue_free()
+		if taken:
+			if target.get_meta("dropped", false):
+				target.hide()
+				target.queue_free()
+		else:
+			_show_feedback("HANDS ARE FULL — Q TO DROP", Color.WHITE)
+
 
 func on_item_dropped(item_id: StringName, drop_position: Vector2) -> void:
-	# Залишаємо предмет усередині стін кімнати.
 	var safe_position := Vector2(
 		clampf(drop_position.x, 85.0, 1195.0),
 		clampf(drop_position.y, 200.0, 590.0)
@@ -161,38 +182,85 @@ func reset_round() -> void:
 	player.reset_player()
 	recipes.reset()
 
+	feedback_time_left = 0.0
+	flash_time_left = 0.0
+	effect_time = 0.0
+	feedback_label.text = ""
+	cauldron.modulate = Color.WHITE
 
-func update_recipe() -> void:
-	if recipes.current_recipe.is_empty():
-		recipe_label.text = ""
+
+func _on_ingredient_correct() -> void:
+	_flash_cauldron(Color(0.6, 1.0, 0.6))
+
+	if not recipes.is_brewing:
+		_show_feedback("CORRECT INGREDIENT!", Color(0.6, 1.0, 0.6))
+
+
+func _on_ingredient_wrong() -> void:
+	manager.on_ingredient_wrong()
+	_flash_cauldron(Color(1.0, 0.35, 0.35))
+	_show_feedback("WRONG INGREDIENT!", Color(1.0, 0.4, 0.4))
+
+
+func _on_brewing_started() -> void:
+	_show_feedback("MIXING...", Color(0.85, 0.65, 1.0))
+
+
+func _on_recipe_completed() -> void:
+	manager.on_recipe_completed()
+	_flash_cauldron(Color(0.7, 1.0, 0.5))
+	_show_feedback("POTION COMPLETE!", Color(0.7, 1.0, 0.5))
+
+
+func _show_feedback(message: String, color: Color) -> void:
+	feedback_label.text = message
+	feedback_label.modulate = color
+	feedback_time_left = 1.4
+
+
+func _flash_cauldron(color: Color) -> void:
+	flash_color = color
+	flash_time_left = 0.4
+
+
+func _process(delta: float) -> void:
+	if manager == null or feedback_layer == null:
 		return
 
-	var ingredients: Array = recipes.current_recipe["ingredients"]
-	var steps := PackedStringArray()
+	var playing: bool = (
+		manager.state == GameManager.GameState.PLAYING
+	)
+	feedback_layer.visible = playing
 
-	for index in range(ingredients.size()):
-		var item_name: String = str(ITEM_NAMES[ingredients[index]])
-
-		if index < recipes.ingredient_index:
-			item_name = "[OK] " + item_name
-
-		steps.append(item_name)
-
-	recipe_label.text = "POTION: %s\n%s" % [
-		recipes.current_recipe["name"],
-		" > ".join(steps)
-	]
-
-
-func update_inventory(item_id: StringName) -> void:
-	var item_name: String = str(ITEM_NAMES.get(item_id, "Empty"))
-	inventory_label.text = "HOLDING: %s    |    Q - drop" % item_name
-
-
-func _process(_delta: float) -> void:
-	if recipe_label == null:
+	# Таймери та ефекти завмирають на паузі.
+	if not playing:
 		return
 
-	var playing: bool = manager.state == GameManager.GameState.PLAYING
-	recipe_label.visible = playing
-	inventory_label.visible = playing
+	recipes.advance_brewing(delta)
+
+	# Завершення рецепта може завершити раунд через пожежу.
+	if manager.state != GameManager.GameState.PLAYING:
+		feedback_layer.hide()
+		return
+
+	effect_time += delta
+	feedback_time_left = maxf(0.0, feedback_time_left - delta)
+	flash_time_left = maxf(0.0, flash_time_left - delta)
+
+	if recipes.is_brewing:
+		feedback_label.text = "MIXING... %.1f" % recipes.brewing_time_left
+		feedback_label.modulate = Color(0.85, 0.65, 1.0)
+	elif feedback_time_left <= 0.0:
+		feedback_label.text = ""
+
+	if flash_time_left > 0.0:
+		cauldron.modulate = Color.WHITE.lerp(
+			flash_color, flash_time_left / 0.4
+		)
+	elif recipes.is_brewing:
+		var pulse: float = (sin(effect_time * 10.0) + 1.0) * 0.5
+		cauldron.modulate = Color.WHITE.lerp(
+			Color(0.75, 0.5, 1.0), pulse * 0.65
+		)
+	else:
+		cauldron.modulate = Color.WHITE
