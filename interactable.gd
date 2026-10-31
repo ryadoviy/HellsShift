@@ -5,7 +5,7 @@ const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
 
 signal interacted(target: GameInteractable, actor: Node)
 
-enum Kind { INGREDIENT, WATER, CAULDRON, FIRE }
+enum Kind { INGREDIENT, WATER, CAULDRON, FIRE, SAFE_ZONE }
 
 @export var kind: Kind = Kind.INGREDIENT
 @export var item_id: StringName = &"mushroom"
@@ -23,7 +23,8 @@ func _ready() -> void:
 	add_to_group("interactables")
 	if kind == Kind.FIRE:
 		return
-	_setup_visual_sprite()
+	if kind != Kind.SAFE_ZONE:
+		_setup_visual_sprite()
 
 	if kind == Kind.CAULDRON:
 		z_index = 4
@@ -46,6 +47,8 @@ func _ready() -> void:
 			caption.position = Vector2(-65, 90)
 		Kind.WATER:
 			caption.position = Vector2(-65, 40)
+		Kind.SAFE_ZONE:
+			caption.position = Vector2(-65, 45)
 		_:
 			caption.position = Vector2(-65, 28)
 
@@ -168,6 +171,8 @@ func can_interact(actor: Node2D) -> bool:
 
 	if kind == Kind.CAULDRON:
 		allowed_distance = maxf(allowed_distance, 150.0)
+	elif kind == Kind.SAFE_ZONE:
+		allowed_distance = maxf(allowed_distance, 120.0)
 
 	return (
 		get_interaction_position().distance_to(actor.global_position)

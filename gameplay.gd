@@ -78,6 +78,20 @@ func setup(game_manager: Node) -> void:
 		Color(0.2, 0.6, 1.0)
 	)
 
+	create_object(
+		GameInteractable.Kind.SAFE_ZONE,
+		&"",
+		Vector2(300, 560),
+		Color(0.25, 0.85, 0.75)
+	)
+
+	create_object(
+		GameInteractable.Kind.SAFE_ZONE,
+		&"",
+		Vector2(1160, 300),
+		Color(0.25, 0.85, 0.75)
+	)
+
 	# Невидима точка взаємодії зі справжнім вогнем.
 	fire_target = create_object(
 		GameInteractable.Kind.FIRE,
@@ -145,6 +159,10 @@ func create_object(
 			target.display_name = "Fire"
 			target.interaction_distance = 150.0
 
+		GameInteractable.Kind.SAFE_ZONE:
+			target.display_name = "Hideout"
+			target.interaction_distance = 120.0
+
 		_:
 			target.display_name = str(
 				ITEM_NAMES.get(item_id, item_id)
@@ -211,6 +229,19 @@ func on_interacted(
 		# --------------------------------
 		GameInteractable.Kind.CAULDRON:
 			_interact_with_cauldron()
+			return
+
+		GameInteractable.Kind.SAFE_ZONE:
+			if player.enter_hideout(5.0):
+				_show_feedback(
+					"HIDDEN FROM GHOSTS!",
+					Color(0.5, 1.0, 0.85)
+				)
+			else:
+				_show_feedback(
+					"HIDEOUT IS ON COOLDOWN!",
+					Color(0.7, 0.8, 1.0)
+				)
 			return
 
 		# --------------------------------

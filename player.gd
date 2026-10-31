@@ -13,6 +13,8 @@ var held_item_sprite: Sprite2D
 var item_textures: Dictionary = {}
 var normal_sprite_scale: Vector2
 var frozen_time_left: float = 0.0
+var hidden_time_left: float = 0.0
+var hideout_cooldown_left: float = 0.0
 
 @onready var witch_sprite: AnimatedSprite2D = $WitchSprite
 
@@ -77,6 +79,13 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(delta: float) -> void:
+	hideout_cooldown_left = maxf(0.0, hideout_cooldown_left - delta)
+
+	if hidden_time_left > 0.0:
+		hidden_time_left = maxf(0.0, hidden_time_left - delta)
+		if hidden_time_left <= 0.0:
+			_set_hidden(false)
+
 	if frozen_time_left <= 0.0:
 		return
 
@@ -95,6 +104,26 @@ func freeze_for(duration: float) -> void:
 
 func is_frozen() -> bool:
 	return frozen_time_left > 0.0
+
+
+func enter_hideout(duration: float) -> bool:
+	if is_frozen() or hidden_time_left > 0.0 or hideout_cooldown_left > 0.0:
+		return false
+
+	hidden_time_left = duration
+	_set_hidden(true)
+	return true
+
+
+func is_hidden() -> bool:
+	return hidden_time_left > 0.0
+
+
+func _set_hidden(hidden: bool) -> void:
+	witch_sprite.modulate.a = 0.35 if hidden else 1.0
+	held_item_sprite.modulate.a = 0.35 if hidden else 1.0
+	if not hidden:
+		hideout_cooldown_left = 10.0
 
 
 # Повертає текстуру поточного кадру AnimatedSprite2D.
@@ -297,6 +326,7 @@ func interact_with_nearest() -> void:
 
 			var can_use_item: bool = (
 				target.kind == GameInteractable.Kind.CAULDRON
+				or target.kind == GameInteractable.Kind.SAFE_ZONE
 				or (
 					target.kind == GameInteractable.Kind.FIRE
 					and inventory.held_item == &"water"
@@ -336,6 +366,9 @@ func reset_player() -> void:
 	velocity = Vector2.ZERO
 	facing_direction = Vector2.DOWN
 	frozen_time_left = 0.0
+	hidden_time_left = 0.0
+	hideout_cooldown_left = 0.0
+	_set_hidden(false)
 
 	if inventory != null:
 		inventory.reset()

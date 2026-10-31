@@ -179,6 +179,7 @@ func advance(delta: float) -> void:
 func _check_player_collision(ghost: Dictionary) -> void:
 	if (
 		player == null
+		or player.is_hidden()
 		or player.is_frozen()
 		or int(ghost["phase"]) != Phase.FLYING
 	):
