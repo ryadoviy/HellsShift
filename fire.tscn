@@ -1,8 +1,7 @@
-
 [gd_scene format=3 uid="uid://bp0ye8ovvopa1"]
 
-[ext_resource type="Script" path="res://fire.gd" id="1_fire"]
-[ext_resource type="Texture2D" path="res://assets/sprites/objects/fire.PNG" id="2_texture"]
+[ext_resource type="Script" uid="uid://c3gppb1mkrt00" path="res://fire.gd" id="1_fire"]
+[ext_resource type="Texture2D" uid="uid://ctgou22sulcaq" path="res://assets/sprites/objects/fire.png" id="2_texture"]
 
 [node name="Fire" type="Node2D" unique_id=1267115820]
 script = ExtResource("1_fire")
@@ -14,7 +13,6 @@ polygon = PackedVector2Array(-42, 42, -30, -10, -12, 4, -15, -48, 0, -22, 16, -7
 
 [node name="FireSprite" type="Sprite2D" parent="." unique_id=1602563547]
 texture = ExtResource("2_texture")
-centered = true
 
 [node name="PointLight2D" type="PointLight2D" parent="." unique_id=1053542037]
 color = Color(1, 0.35, 0.08, 1)

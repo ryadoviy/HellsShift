@@ -1,4 +1,3 @@
-
 extends CharacterBody2D
 class_name CorePlayer
 
@@ -28,7 +27,7 @@ func _ready() -> void:
 	if old_body != null:
 		old_body.hide()
 
-	# Колізія біля ніг
+	# Колізія біля ніг персонажа.
 	var collision := $CollisionShape2D as CollisionShape2D
 	var feet_shape := CircleShape2D.new()
 	feet_shape.radius = 18.0
@@ -38,7 +37,7 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 1
 
-	# Предмет у руках відьмочки
+	# Спрайт предмета, який персонаж тримає в руках.
 	held_item_sprite = Sprite2D.new()
 	held_item_sprite.name = "HeldItemSprite"
 	held_item_sprite.visible = false
@@ -57,7 +56,7 @@ func _physics_process(_delta: float) -> void:
 		"move_left",
 		"move_right",
 		"move_up",
-        "move_down"
+		"move_down"
 	)
 
 	if direction != Vector2.ZERO:
@@ -71,7 +70,7 @@ func _physics_process(_delta: float) -> void:
 	_update_depth()
 
 
-# Отримуємо текстуру поточного кадру AnimatedSprite2D
+# Повертає текстуру поточного кадру AnimatedSprite2D.
 func _get_current_witch_texture() -> Texture2D:
 	if witch_sprite.sprite_frames == null:
 		return null
@@ -123,15 +122,12 @@ func update_witch_animation(direction: Vector2) -> void:
 		suffix = "up" if look_direction.y < 0.0 else "down"
 
 	var is_moving := direction != Vector2.ZERO
-
 	var animation_name := (
 		"walk_" + suffix if is_moving else "idle_" + suffix
 	)
 
 	if is_moving:
-		witch_sprite.scale = (
-			normal_sprite_scale * walking_scale_multiplier
-		)
+		witch_sprite.scale = normal_sprite_scale * walking_scale_multiplier
 	else:
 		witch_sprite.scale = normal_sprite_scale
 
@@ -141,7 +137,7 @@ func update_witch_animation(direction: Vector2) -> void:
 		witch_sprite.play()
 
 
-# Показуємо предмет у руках
+# Оновлює предмет у руках після зміни інвентаря.
 func _on_item_changed(item_id: StringName) -> void:
 	held_item_sprite.visible = false
 	held_item_sprite.texture = null
@@ -162,9 +158,7 @@ func _on_item_changed(item_id: StringName) -> void:
 	)
 
 	if longest_side > 0.0:
-		held_item_sprite.scale = Vector2.ONE * (
-			38.0 / longest_side
-		)
+		held_item_sprite.scale = Vector2.ONE * (38.0 / longest_side)
 
 	held_item_sprite.visible = true
 	_update_held_item_position()
@@ -177,20 +171,20 @@ func _get_item_texture(item_id: StringName) -> Texture2D:
 	var path: String
 
 	if item_id == &"water":
-		path = "res://assets/sprites/objects/water.PNG"
+		path = "res://assets/sprites/objects/water.png"
 	else:
-		path = (
-            "res://assets/sprites/ingredients/%s.png"
-			% str(item_id)
-		)
+		path = "res://assets/sprites/ingredients/%s.png" % str(item_id)
 
 	if not ResourceLoader.exists(path):
 		push_warning("Held item image not found: " + path)
 		return null
 
 	var texture := load(path) as Texture2D
-	item_textures[item_id] = texture
+	if texture == null:
+		push_warning("Could not load held item image: " + path)
+		return null
 
+	item_textures[item_id] = texture
 	return texture
 
 
@@ -199,37 +193,25 @@ func _update_held_item_position() -> void:
 		return
 
 	var sprite_height := _get_witch_height()
-
 	if sprite_height <= 0.0:
 		return
 
 	var hand_height := -sprite_height * 0.43
-
 	held_item_sprite.z_index = 1
 
 	if absf(facing_direction.x) > absf(facing_direction.y):
 		var side := -1.0 if facing_direction.x < 0.0 else 1.0
-
-		held_item_sprite.position = Vector2(
-			32.0 * side,
-			hand_height
-		)
+		held_item_sprite.position = Vector2(32.0 * side, hand_height)
 
 	elif facing_direction.y < 0.0:
-		held_item_sprite.position = Vector2(
-			28,
-			hand_height - 5.0
-		)
+		held_item_sprite.position = Vector2(28.0, hand_height - 5.0)
 		held_item_sprite.z_index = -1
 
 	else:
-		held_item_sprite.position = Vector2(
-			22,
-			hand_height
-		)
+		held_item_sprite.position = Vector2(22.0, hand_height)
 
 
-# Порядок відображення персонажа біля казана
+# Визначає порядок відображення персонажа відносно казана.
 func _update_depth() -> void:
 	z_index = 5
 
@@ -248,15 +230,15 @@ func _update_depth() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		interact_with_nearest()
-
 	elif event.is_action_pressed("drop_item"):
 		drop_held_item()
 
 
 func interact_with_nearest() -> void:
-	var nearest: GameInteractable = null
-	var nearest_distance: float = INF
+	var nearest_item: GameInteractable = null
+	var nearest_item_distance: float = INF
 	var nearby_cauldron: GameInteractable = null
+	var cauldron_distance: float = INF
 
 	for node in get_tree().get_nodes_in_group("interactables"):
 		var target := node as GameInteractable
@@ -267,26 +249,29 @@ func interact_with_nearest() -> void:
 		if not target.can_interact(self):
 			continue
 
-		var distance: float = global_position.distance_to(
+		var distance := global_position.distance_to(
 			target.get_interaction_position()
 		)
 
-		if (
-			inventory.has_item()
-			and target.kind == GameInteractable.Kind.CAULDRON
-		):
-			nearby_cauldron = target
+		if inventory.has_item():
+			# Коли руки зайняті, предмет можна використати на казані.
+			if target.kind == GameInteractable.Kind.CAULDRON:
+				if distance < cauldron_distance:
+					nearby_cauldron = target
+					cauldron_distance = distance
+		else:
+			# З порожніми руками шукаємо найближчий інгредієнт або воду.
+			if target.kind != GameInteractable.Kind.CAULDRON:
+				if distance < nearest_item_distance:
+					nearest_item = target
+					nearest_item_distance = distance
 
-		if distance < nearest_distance:
-			nearest = target
-			nearest_distance = distance
-
-	if nearby_cauldron != null:
-		nearby_cauldron.interact(self)
-		return
-
-	if nearest != null:
-		nearest.interact(self)
+	if inventory.has_item():
+		if nearby_cauldron != null:
+			nearby_cauldron.interact(self)
+	else:
+		if nearest_item != null:
+			nearest_item.interact(self)
 
 
 func drop_held_item() -> void:
@@ -294,11 +279,7 @@ func drop_held_item() -> void:
 		return
 
 	var item_id: StringName = inventory.remove_item()
-
-	var drop_position: Vector2 = (
-		global_position + facing_direction * 48.0
-	)
-
+	var drop_position := global_position + facing_direction * 48.0
 	item_dropped.emit(item_id, drop_position)
 
 

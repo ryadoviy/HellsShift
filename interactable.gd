@@ -3,7 +3,7 @@ class_name GameInteractable
 
 signal interacted(target: GameInteractable, actor: Node)
 
-enum Kind { INGREDIENT, WATER, CAULDRON }
+enum Kind { INGREDIENT, WATER, CAULDRON, FIRE }
 
 @export var kind: Kind = Kind.INGREDIENT
 @export var item_id: StringName = &"mushroom"
@@ -19,6 +19,8 @@ var visual_sprite: Sprite2D = null
 
 func _ready() -> void:
 	add_to_group("interactables")
+	if kind == Kind.FIRE:
+		return
 	_setup_visual_sprite()
 
 	if kind == Kind.CAULDRON:
@@ -55,7 +57,7 @@ func _setup_visual_sprite() -> void:
 	match kind:
 		Kind.INGREDIENT:
 			if item_id == &"water":
-				image_path = "res://assets/sprites/objects/water.PNG"
+				image_path = "res://assets/sprites/objects/water.png"
 			else:
 				image_path = (
 					"res://assets/sprites/ingredients/%s.png"
@@ -67,7 +69,7 @@ func _setup_visual_sprite() -> void:
 			target_size = 250.0
 
 		Kind.WATER:
-			image_path = "res://assets/sprites/objects/water.PNG"
+			image_path = "res://assets/sprites/objects/water.png"
 			target_size = 150.0
 
 	if not ResourceLoader.exists(image_path):

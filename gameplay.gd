@@ -1,3 +1,4 @@
+
 extends Node
 class_name Gameplay
 
@@ -17,13 +18,14 @@ var player: CorePlayer
 var recipes: RecipeManager
 var objects: Node2D
 var cauldron: GameInteractable
+var fire_target: GameInteractable
 var ghost_system: GhostSabotage
 
 var feedback_layer: CanvasLayer
 var feedback_label: Label
 var feedback_time_left: float = 0.0
 var flash_time_left: float = 0.0
-var flash_color := Color.WHITE
+var flash_color: Color = Color.WHITE
 var effect_time: float = 0.0
 
 
@@ -44,6 +46,7 @@ func setup(game_manager: Node) -> void:
 	recipes.ingredient_wrong.connect(_on_ingredient_wrong)
 	recipes.brewing_started.connect(_on_brewing_started)
 	recipes.recipe_completed.connect(_on_recipe_completed)
+
 	player.item_dropped.connect(on_item_dropped)
 
 	var ingredient_ids: Array[StringName] = [
@@ -73,6 +76,17 @@ func setup(game_manager: Node) -> void:
 		Color(0.2, 0.6, 1.0)
 	)
 
+	# Невидима точка взаємодії зі справжнім вогнем.
+	fire_target = create_object(
+		GameInteractable.Kind.FIRE,
+		&"",
+		objects.to_local(manager.fire.global_position),
+		Color(1.0, 0.3, 0.1)
+	)
+
+	fire_target.display_name = "Fire"
+	fire_target.interaction_distance = 150.0
+
 	ghost_system = GhostSabotage.new()
 	ghost_system.name = "GhostSystem"
 	add_child(ghost_system)
@@ -96,6 +110,7 @@ func _setup_feedback() -> void:
 	)
 	feedback_label.add_theme_constant_override("shadow_offset_x", 2)
 	feedback_label.add_theme_constant_override("shadow_offset_y", 2)
+
 	feedback_layer.add_child(feedback_label)
 
 
@@ -117,19 +132,33 @@ func create_object(
 		GameInteractable.Kind.CAULDRON:
 			target.display_name = "Cauldron"
 			target.interaction_distance = 150.0
+
 		GameInteractable.Kind.WATER:
-			target.display_name = str(ITEM_NAMES.get(item_id, item_id))
+			target.display_name = "Water"
 			target.interaction_distance = 120.0
+
+		GameInteractable.Kind.FIRE:
+			target.display_name = "Fire"
+			target.interaction_distance = 150.0
+
 		_:
-			target.display_name = str(ITEM_NAMES.get(item_id, item_id))
-			target.interaction_distance = 70.0 if dropped else 150.0
+			target.display_name = str(
+				ITEM_NAMES.get(item_id, item_id)
+			)
+			target.interaction_distance = (
+				70.0 if dropped else 150.0
+			)
 
 	target.interacted.connect(on_interacted)
 	objects.add_child(target)
+
 	return target
 
 
-func on_interacted(target: GameInteractable, actor: Node) -> void:
+func on_interacted(
+	target: GameInteractable,
+	actor: Node
+) -> void:
 	if manager.state != GameManager.GameState.PLAYING:
 		return
 
@@ -143,42 +172,138 @@ func on_interacted(target: GameInteractable, actor: Node) -> void:
 		)
 		return
 
-	if target.kind == GameInteractable.Kind.CAULDRON:
-		if not player.inventory.has_item():
-			if not recipes.is_brewing:
-				_show_feedback("TAKE AN INGREDIENT FIRST", Color.WHITE)
+	match target.kind:
+
+		# --------------------------------
+		# ВЗАЄМОДІЯ З ВОГНЕМ
+		# --------------------------------
+		GameInteractable.Kind.FIRE:
+			if player.inventory.held_item != &"water":
+				_show_feedback(
+					"YOU NEED WATER!",
+					Color(1.0, 0.7, 0.5)
+				)
+				return
+
+			if manager.use_water():
+				player.inventory.remove_item()
+
+				_show_feedback(
+					"FIRE EXTINGUISHED! -35%",
+					Color(0.5, 0.85, 1.0)
+				)
+			else:
+				_show_feedback(
+					"WATER IS LOCKED!",
+					Color(1.0, 0.5, 0.5)
+				)
+
 			return
 
-		var held_item: StringName = player.inventory.held_item
+		# --------------------------------
+		# ПІДБИРАННЯ ВОДИ
+		# --------------------------------
+		GameInteractable.Kind.WATER:
+			_try_take_water(target)
+			return
 
-		if recipes.is_brewing and held_item != &"water":
-			_show_feedback(
-				"CAULDRON IS MIXING...",
-				Color(1.0, 0.85, 0.4)
+		# --------------------------------
+		# ВЗАЄМОДІЯ З КАЗАНОМ
+		# --------------------------------
+		GameInteractable.Kind.CAULDRON:
+			_interact_with_cauldron()
+			return
+
+		# --------------------------------
+		# ЗВИЧАЙНІ ІНГРЕДІЄНТИ
+		# --------------------------------
+		GameInteractable.Kind.INGREDIENT:
+			# Викинуту воду теж не можна підібрати,
+			# якщо право на воду вже витрачено.
+			if target.item_id == &"water":
+				_try_take_water(target)
+				return
+
+			var taken: bool = player.inventory.take_item(
+				target.item_id
 			)
-			return
 
-		var item_id: StringName = player.inventory.remove_item()
-
-		if item_id == &"water":
-			manager.use_water()
-			_flash_cauldron(Color(0.5, 0.8, 1.0))
-			_show_feedback("WATER USED", Color(0.5, 0.85, 1.0))
-		else:
-			recipes.add_ingredient(item_id)
-
-	else:
-		var taken: bool = player.inventory.take_item(target.item_id)
-
-		if taken:
-			if target.get_meta("dropped", false):
-				target.hide()
-				target.queue_free()
-		else:
-			_show_feedback("HANDS ARE FULL — Q TO DROP", Color.WHITE)
+			if taken:
+				if target.get_meta("dropped", false):
+					target.hide()
+					target.queue_free()
+			else:
+				_show_feedback(
+					"HANDS ARE FULL - Q TO DROP",
+					Color.WHITE
+				)
 
 
-func on_item_dropped(item_id: StringName, drop_position: Vector2) -> void:
+func _try_take_water(target: GameInteractable) -> void:
+	# Перевіряємо нагороду за три зілля.
+	if not manager.water_unlocked:
+		_show_feedback(
+			"BREW 3 POTIONS TO UNLOCK WATER!",
+			Color(0.75, 0.65, 1.0)
+		)
+		return
+
+	if player.inventory.has_item():
+		_show_feedback(
+			"HANDS ARE FULL - Q TO DROP",
+			Color.WHITE
+		)
+		return
+
+	var taken: bool = player.inventory.take_item(&"water")
+
+	if taken:
+		_show_feedback(
+			"WATER TAKEN! GO TO THE FIRE!",
+			Color(0.5, 0.85, 1.0)
+		)
+
+		# Забираємо лише воду, викинуту на підлогу.
+		# Постійне відро залишається на своєму місці.
+		if target.get_meta("dropped", false):
+			target.hide()
+			target.queue_free()
+
+
+func _interact_with_cauldron() -> void:
+	if not player.inventory.has_item():
+		if not recipes.is_brewing:
+			_show_feedback(
+				"TAKE AN INGREDIENT FIRST",
+				Color.WHITE
+			)
+		return
+
+	var held_item: StringName = player.inventory.held_item
+
+	# ВОДУ В КАЗАН БІЛЬШЕ НЕ НАЛИВАЄМО.
+	if held_item == &"water":
+		_show_feedback(
+			"POUR WATER ON THE FIRE!",
+			Color(0.5, 0.85, 1.0)
+		)
+		return
+
+	if recipes.is_brewing:
+		_show_feedback(
+			"CAULDRON IS MIXING...",
+			Color(1.0, 0.85, 0.4)
+		)
+		return
+
+	var item_id: StringName = player.inventory.remove_item()
+	recipes.add_ingredient(item_id)
+
+
+func on_item_dropped(
+	item_id: StringName,
+	drop_position: Vector2
+) -> void:
 	var safe_position := Vector2(
 		clampf(drop_position.x, 85.0, 1195.0),
 		clampf(drop_position.y, 200.0, 590.0)
@@ -215,23 +340,39 @@ func _on_ingredient_correct() -> void:
 	_flash_cauldron(Color(0.6, 1.0, 0.6))
 
 	if not recipes.is_brewing:
-		_show_feedback("CORRECT INGREDIENT!", Color(0.6, 1.0, 0.6))
+		_show_feedback(
+			"CORRECT INGREDIENT!",
+			Color(0.6, 1.0, 0.6)
+		)
 
 
 func _on_ingredient_wrong() -> void:
 	manager.on_ingredient_wrong()
+
 	_flash_cauldron(Color(1.0, 0.35, 0.35))
-	_show_feedback("WRONG INGREDIENT!", Color(1.0, 0.4, 0.4))
+
+	_show_feedback(
+		"WRONG INGREDIENT!",
+		Color(1.0, 0.4, 0.4)
+	)
 
 
 func _on_brewing_started() -> void:
-	_show_feedback("MIXING...", Color(0.85, 0.65, 1.0))
+	_show_feedback(
+		"MIXING...",
+		Color(0.85, 0.65, 1.0)
+	)
 
 
 func _on_recipe_completed() -> void:
 	manager.on_recipe_completed()
+
 	_flash_cauldron(Color(0.7, 1.0, 0.5))
-	_show_feedback("POTION COMPLETE!", Color(0.7, 1.0, 0.5))
+
+	_show_feedback(
+		"POTION COMPLETE!",
+		Color(0.7, 1.0, 0.5)
+	)
 
 
 func _show_feedback(message: String, color: Color) -> void:
@@ -252,6 +393,7 @@ func _process(delta: float) -> void:
 	var playing: bool = (
 		manager.state == GameManager.GameState.PLAYING
 	)
+
 	feedback_layer.visible = playing
 
 	if ghost_system != null:
@@ -260,7 +402,6 @@ func _process(delta: float) -> void:
 			or manager.state == GameManager.GameState.PAUSED
 		)
 
-		# Після виходу з раунду прибираємо блокування.
 		if (
 			not playing
 			and manager.state != GameManager.GameState.PAUSED
@@ -280,23 +421,45 @@ func _process(delta: float) -> void:
 	ghost_system.advance(delta)
 
 	effect_time += delta
-	feedback_time_left = maxf(0.0, feedback_time_left - delta)
-	flash_time_left = maxf(0.0, flash_time_left - delta)
+
+	feedback_time_left = maxf(
+		0.0,
+		feedback_time_left - delta
+	)
+
+	flash_time_left = maxf(
+		0.0,
+		flash_time_left - delta
+	)
 
 	if recipes.is_brewing:
-		feedback_label.text = "MIXING... %.1f" % recipes.brewing_time_left
-		feedback_label.modulate = Color(0.85, 0.65, 1.0)
+		feedback_label.text = (
+            "MIXING... %.1f"
+			% recipes.brewing_time_left
+		)
+
+		feedback_label.modulate = Color(
+			0.85, 0.65, 1.0
+		)
+
 	elif feedback_time_left <= 0.0:
 		feedback_label.text = ""
 
 	if flash_time_left > 0.0:
 		cauldron.modulate = Color.WHITE.lerp(
-			flash_color, flash_time_left / 0.4
+			flash_color,
+			flash_time_left / 0.4
 		)
+
 	elif recipes.is_brewing:
-		var pulse: float = (sin(effect_time * 10.0) + 1.0) * 0.5
+		var pulse: float = (
+			sin(effect_time * 10.0) + 1.0
+		) * 0.5
+
 		cauldron.modulate = Color.WHITE.lerp(
-			Color(0.75, 0.5, 1.0), pulse * 0.65
+			Color(0.75, 0.5, 1.0),
+			pulse * 0.65
 		)
+
 	else:
 		cauldron.modulate = Color.WHITE
