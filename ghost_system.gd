@@ -2,7 +2,7 @@
 extends Node2D
 class_name GhostSabotage
 
-enum Phase { FLYING, BLOCKING, LEAVING }
+enum Phase { FLYING, LEAVING }
 
 @export var ghost_size: float = 150.0
 @export var ghost_fps: float = 6.0
@@ -10,6 +10,7 @@ enum Phase { FLYING, BLOCKING, LEAVING }
 var spawn_interval: float = 25.0
 var max_ghosts: int = 2
 var block_duration: float = 3.0
+var hunt_duration: float = 5.0
 var flight_speed: float = 180.0
 
 var objects: Node2D
@@ -75,16 +76,17 @@ func _load_ghost_animations() -> void:
 func configure(
 	interval: float,
 	limit: int,
-	duration: float
+	duration: float,
+	hunt_time: float
 ) -> void:
 	spawn_interval = maxf(1.0, interval)
 	max_ghosts = clampi(limit, 0, 6)
 	block_duration = maxf(0.1, duration)
+	hunt_duration = maxf(0.1, hunt_time)
 
 
 func reset() -> void:
 	for ghost in ghosts:
-		_release_target(ghost)
 		_remove_ghost_sprite(ghost)
 
 	ghosts.clear()
@@ -106,63 +108,27 @@ func advance(delta: float) -> void:
 
 	for index in range(ghosts.size() - 1, -1, -1):
 		var ghost: Dictionary = ghosts[index]
-		var target := ghost["target"] as GameInteractable
 		var position: Vector2 = ghost["position"]
 		var phase: int = int(ghost["phase"])
 
-		if not is_instance_valid(target):
-			_release_target(ghost)
-			_remove_ghost_sprite(ghost)
-			ghosts.remove_at(index)
-			continue
-
 		match phase:
 			Phase.FLYING:
-				var destination: Vector2
-				if (
-					player != null
-					and bool(ghost.get("hunts_player", false))
-					and not bool(ghost.get("player_hit", false))
-				):
-					destination = to_local(player.global_position)
-				else:
-					destination = to_local(
-						target.global_position
-					) + Vector2(0, -25)
+				if player == null:
+					continue
+
+				var destination := to_local(player.global_position)
 
 				position = position.move_toward(
 					destination,
 					flight_speed * delta
 				)
 				ghost["position"] = position
-
-				if position.distance_to(destination) < 2.0:
-					if (
-						player != null
-						and bool(ghost.get("hunts_player", false))
-						and not bool(ghost.get("player_hit", false))
-					):
-						ghost["player_hit"] = true
-						player.freeze_for(block_duration)
-						ghost["phase"] = Phase.LEAVING
-					else:
-						ghost["phase"] = Phase.BLOCKING
-						ghost["time_left"] = block_duration
-						target.set_meta("ghost_blocked", true)
-						target.modulate = Color(0.6, 0.7, 1.0)
-
-			Phase.BLOCKING:
-				ghost["position"] = to_local(
-					target.global_position
-				) + Vector2(0, -25)
-
-				ghost["time_left"] = maxf(
+				ghost["hunt_time_left"] = maxf(
 					0.0,
-					float(ghost["time_left"]) - delta
+					float(ghost["hunt_time_left"]) - delta
 				)
 
-				if float(ghost["time_left"]) <= 0.0:
-					_release_target(ghost)
+				if float(ghost["hunt_time_left"]) <= 0.0:
 					ghost["phase"] = Phase.LEAVING
 
 			Phase.LEAVING:
@@ -186,52 +152,26 @@ func advance(delta: float) -> void:
 
 
 func _check_player_collision(ghost: Dictionary) -> void:
-	if player == null or player.is_frozen():
-		return
-
-	var sprite := ghost.get("sprite") as AnimatedSprite2D
-	if not is_instance_valid(sprite):
+	if (
+		player == null
+		or player.is_frozen()
+		or int(ghost["phase"]) != Phase.FLYING
+	):
 		return
 
 	var distance: float = player.global_position.distance_to(
-		sprite.global_position
+		to_global(ghost["position"])
 	)
 
-	if distance <= 110.0 and not bool(ghost.get("player_hit", false)):
+	if distance <= 34.0:
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
-		_release_target(ghost)
 		ghost["phase"] = Phase.LEAVING
 
 
 func spawn_ghost() -> bool:
 	if objects == null or ghosts.size() >= max_ghosts:
 		return false
-
-	var candidates: Array[GameInteractable] = []
-
-	for child in objects.get_children():
-		var target := child as GameInteractable
-
-		if target == null or not target.is_visible_in_tree():
-			continue
-
-		if target.kind != GameInteractable.Kind.INGREDIENT:
-			continue
-
-		if target.get_meta("dropped", false):
-			continue
-
-		if target.get_meta("ghost_reserved", false):
-			continue
-
-		candidates.append(target)
-
-	if candidates.is_empty():
-		return false
-
-	var target: GameInteractable = candidates.pick_random()
-	target.set_meta("ghost_reserved", true)
 
 	var from_left: bool = randf() < 0.5
 	var edge_x: float = -70.0 if from_left else 1350.0
@@ -245,16 +185,12 @@ func spawn_ghost() -> bool:
 	sprite.position = entry_position
 
 	ghosts.append({
-		"target": target,
 		"position": entry_position,
 		"exit": Vector2(edge_x, 90.0),
 		"phase": Phase.FLYING,
-		"time_left": block_duration,
+		"hunt_time_left": hunt_duration,
 		"seed": randf_range(0.0, TAU),
-		"original_modulate": target.modulate,
-		"released": false,
 		"player_hit": false,
-		"hunts_player": ghosts.size() % 2 == 0,
 		"sprite": sprite
 	})
 
@@ -320,26 +256,9 @@ func _remove_ghost_sprite(ghost: Dictionary) -> void:
 		sprite.queue_free()
 
 
-func _release_target(ghost: Dictionary) -> void:
-	if bool(ghost.get("released", false)):
-		return
-
-	ghost["released"] = true
-
-	var target := ghost.get("target") as GameInteractable
-
-	if not is_instance_valid(target):
-		return
-
-	target.set_meta("ghost_blocked", false)
-	target.set_meta("ghost_reserved", false)
-	target.modulate = ghost["original_modulate"]
-
-
 func _draw() -> void:
-	# Залишаємо тільки індикатор часу блокування
 	for ghost in ghosts:
-		if int(ghost["phase"]) != Phase.BLOCKING:
+		if int(ghost["phase"]) != Phase.FLYING:
 			continue
 
 		var position: Vector2 = ghost["position"]
@@ -349,9 +268,9 @@ func _draw() -> void:
 			animation_time * 3.5 + seed_value
 		) * 7.0
 
-		var remaining: float = float(ghost["time_left"])
+		var remaining: float = float(ghost["hunt_time_left"])
 		var progress: float = clampf(
-			remaining / block_duration,
+			remaining / hunt_duration,
 			0.0,
 			1.0
 		)

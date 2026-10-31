@@ -102,25 +102,25 @@ func apply_fire_difficulty() -> void:
 			config.fire_growth_interval = 15.0
 			config.fire_growth_amount = 3.0
 			config.potions_for_water = 3
-			gameplay.ghost_system.configure(18.0, 2, 3.0)
+			gameplay.ghost_system.configure(18.0, 2, 3.0, 5.0)
 
 		"NORMAL":
 			config.fire_growth_interval = 10.0
 			config.fire_growth_amount = 5.0
 			config.potions_for_water = 5
-			gameplay.ghost_system.configure(15.0, 4, 5.0)
+			gameplay.ghost_system.configure(15.0, 4, 5.0, 7.0)
 
 		"HARD":
 			config.fire_growth_interval = 7.0
 			config.fire_growth_amount = 8.0
 			config.potions_for_water = 7
-			gameplay.ghost_system.configure(12.0, 6, 7.0)
+			gameplay.ghost_system.configure(12.0, 6, 7.0, 9.0)
 
 		_:
 			config.fire_growth_interval = 10.0
 			config.fire_growth_amount = 5.0
 			config.potions_for_water = 5
-			gameplay.ghost_system.configure(15.0, 4, 5.0)
+			gameplay.ghost_system.configure(15.0, 4, 5.0, 7.0)
 
 	print("DIFFICULTY: ", selected_difficulty)
 	print("FIRE EVERY: ", config.fire_growth_interval, "s")
