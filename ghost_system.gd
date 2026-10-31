@@ -18,6 +18,7 @@ var player: CorePlayer
 var ghosts: Array[Dictionary] = []
 var spawn_time_left: float = 8.0
 var animation_time: float = 0.0
+var wave_spawn_index: int = 0
 
 var ghost_animations: Array[SpriteFrames] = []
 
@@ -92,6 +93,7 @@ func reset() -> void:
 	ghosts.clear()
 	spawn_time_left = minf(3.0, spawn_interval)
 	animation_time = 0.0
+	wave_spawn_index = 0
 	queue_redraw()
 
 
@@ -104,6 +106,8 @@ func advance(delta: float) -> void:
 
 	if spawn_time_left <= 0.0:
 		spawn_time_left = spawn_interval
+		if ghosts.is_empty():
+			wave_spawn_index = 0
 		while ghosts.size() < max_ghosts and spawn_ghost():
 			pass
 
@@ -117,13 +121,23 @@ func advance(delta: float) -> void:
 				if player == null:
 					continue
 
-				var destination := to_local(player.global_position)
-
-				position = position.move_toward(
-					destination,
-					flight_speed * delta
+				var hit_pause: float = float(
+					ghost.get("hit_pause_left", 0.0)
 				)
-				ghost["position"] = position
+
+				if hit_pause > 0.0:
+					ghost["hit_pause_left"] = maxf(
+						0.0,
+						hit_pause - delta
+					)
+				else:
+					var destination := to_local(player.global_position)
+					position = position.move_toward(
+						destination,
+						flight_speed * delta
+					)
+					ghost["position"] = position
+
 				ghost["hunt_time_left"] = maxf(
 					0.0,
 					float(ghost["hunt_time_left"]) - delta
@@ -164,21 +178,31 @@ func _check_player_collision(ghost: Dictionary) -> void:
 		to_global(ghost["position"])
 	)
 
-	if distance <= 34.0:
+	if (
+		distance <= 34.0
+		and not bool(ghost.get("player_hit", false))
+	):
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
+		ghost["hit_pause_left"] = 1.0
 
 
 func spawn_ghost() -> bool:
 	if objects == null or ghosts.size() >= max_ghosts:
 		return false
 
-	var from_left: bool = randf() < 0.5
-	var edge_x: float = -70.0 if from_left else 1350.0
-	var entry_position := Vector2(
-		edge_x,
-		randf_range(100.0, 230.0)
+	var spawn_index := wave_spawn_index
+	wave_spawn_index += 1
+	var spawn_layout := [
+		Vector2(-70.0, 170.0),
+		Vector2(-70.0, 560.0),
+		Vector2(1350.0, 360.0)
+	]
+	var layout_index: int = mini(
+		spawn_index,
+		spawn_layout.size() - 1
 	)
+	var entry_position: Vector2 = spawn_layout[layout_index]
 	var ghost_type: int = ghosts.size() % 2
 
 	# Створюємо графічного привида
@@ -187,11 +211,12 @@ func spawn_ghost() -> bool:
 
 	ghosts.append({
 		"position": entry_position,
-		"exit": Vector2(edge_x, 90.0),
+		"exit": Vector2(entry_position.x, 90.0),
 		"phase": Phase.FLYING,
 		"hunt_time_left": hunt_duration,
 		"seed": randf_range(0.0, TAU),
 		"player_hit": false,
+		"hit_pause_left": 0.0,
 		"ghost_type": ghost_type,
 		"sprite": sprite
 	})
