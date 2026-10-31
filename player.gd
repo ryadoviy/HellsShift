@@ -55,6 +55,7 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if is_frozen():
 		velocity = Vector2.ZERO
+		witch_sprite.pause()
 		return
 
 	var direction := Input.get_vector(
@@ -79,12 +80,17 @@ func _process(delta: float) -> void:
 	if frozen_time_left <= 0.0:
 		return
 
+	var was_frozen := is_frozen()
 	frozen_time_left = maxf(0.0, frozen_time_left - delta)
+
+	if was_frozen and not is_frozen():
+		witch_sprite.play()
 
 
 func freeze_for(duration: float) -> void:
 	frozen_time_left = maxf(frozen_time_left, duration)
 	velocity = Vector2.ZERO
+	witch_sprite.pause()
 
 
 func is_frozen() -> bool:
