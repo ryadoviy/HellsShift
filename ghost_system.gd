@@ -167,7 +167,6 @@ func _check_player_collision(ghost: Dictionary) -> void:
 	if distance <= 34.0:
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
-		ghost["phase"] = Phase.LEAVING
 
 
 func spawn_ghost() -> bool:
