@@ -154,7 +154,65 @@ func _process(delta: float) -> void:
 	if manager.state == GameManager.GameState.PLAYING:
 		animation_time += delta
 
+	_animate_flames()
 	queue_redraw()
+
+
+func _animate_flames() -> void:
+	if fire_sprite == null or fire_sprite.texture == null:
+		return
+
+	var texture_size: Vector2 = fire_sprite.texture.get_size()
+	var longest_side: float = maxf(
+		texture_size.x,
+		texture_size.y
+	)
+
+	if longest_side <= 0.0:
+		return
+
+	var main_pulse: float = sin(animation_time * 7.0) * 0.045
+	var main_sway: float = sin(animation_time * 4.0) * 0.035
+	var main_size: float = lerpf(
+		min_fire_size,
+		max_fire_size,
+		level / 100.0
+	)
+
+	fire_sprite.scale = Vector2(
+		(main_size / longest_side) * (1.0 - main_sway),
+		(main_size / longest_side) * (1.0 + main_pulse)
+	)
+	fire_sprite.rotation = sin(animation_time * 3.0) * 0.025
+	fire_sprite.position = Vector2(
+		sin(animation_time * 5.0) * 3.0,
+		cos(animation_time * 4.0) * 2.0
+	)
+
+	for index in range(spread_sprites.size()):
+		var spread_sprite := spread_sprites[index]
+		if not is_instance_valid(spread_sprite):
+			continue
+
+		if spread_sprite.modulate.a <= 0.0:
+			continue
+
+		var spread_size: float = lerpf(
+			105.0,
+			185.0,
+			level / 100.0
+		)
+		var phase: float = float(index) * 1.7
+		var pulse: float = sin(animation_time * 6.0 + phase) * 0.06
+		var sway: float = sin(animation_time * 3.5 + phase) * 0.04
+
+		spread_sprite.scale = Vector2(
+			(spread_size / longest_side) * (1.0 - sway),
+			(spread_size / longest_side) * (1.0 + pulse)
+		)
+		spread_sprite.rotation = sin(
+			animation_time * 2.5 + phase
+		) * 0.08
 
 
 func _room_point(point: Vector2) -> Vector2:

@@ -237,8 +237,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func interact_with_nearest() -> void:
 	var nearest_item: GameInteractable = null
 	var nearest_item_distance: float = INF
-	var nearby_cauldron: GameInteractable = null
-	var cauldron_distance: float = INF
+	var nearby_action: GameInteractable = null
+	var action_distance: float = INF
 
 	for node in get_tree().get_nodes_in_group("interactables"):
 		var target := node as GameInteractable
@@ -254,11 +254,17 @@ func interact_with_nearest() -> void:
 		)
 
 		if inventory.has_item():
-			# Коли руки зайняті, предмет можна використати на казані.
-			if target.kind == GameInteractable.Kind.CAULDRON:
-				if distance < cauldron_distance:
-					nearby_cauldron = target
-					cauldron_distance = distance
+			var can_use_item: bool = (
+				target.kind == GameInteractable.Kind.CAULDRON
+				or (
+					target.kind == GameInteractable.Kind.FIRE
+					and inventory.held_item == &"water"
+				)
+			)
+
+			if can_use_item and distance < action_distance:
+				nearby_action = target
+				action_distance = distance
 		else:
 			# З порожніми руками шукаємо найближчий інгредієнт або воду.
 			if target.kind != GameInteractable.Kind.CAULDRON:
@@ -267,8 +273,8 @@ func interact_with_nearest() -> void:
 					nearest_item_distance = distance
 
 	if inventory.has_item():
-		if nearby_cauldron != null:
-			nearby_cauldron.interact(self)
+		if nearby_action != null:
+			nearby_action.interact(self)
 	else:
 		if nearest_item != null:
 			nearest_item.interact(self)
