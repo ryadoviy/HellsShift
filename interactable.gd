@@ -160,6 +160,9 @@ func can_interact(actor: Node2D) -> bool:
 
 	var allowed_distance: float = interaction_distance
 
+	if kind == Kind.FIRE:
+		allowed_distance = maxf(allowed_distance, 220.0)
+
 	if kind == Kind.CAULDRON:
 		allowed_distance = maxf(allowed_distance, 150.0)
 
