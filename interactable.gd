@@ -48,8 +48,8 @@ func _ready() -> void:
 		Kind.WATER:
 			caption.position = Vector2(-65, 40)
 		Kind.SAFE_ZONE:
-			caption.text = "SAFE ZONE"
-			caption.position = Vector2(-100, 64)
+			caption.text = "SAFE POINT"
+			caption.position = Vector2(-70, 52)
 		_:
 			caption.position = Vector2(-65, 28)
 
@@ -191,45 +191,58 @@ func _draw() -> void:
 		return
 
 	if kind == Kind.SAFE_ZONE:
-		var safe_rect := Rect2(-100.0, -60.0, 200.0, 120.0)
-		var border_color := Color("#9875A6")
-		var dark_color := Color("#211B31")
-		draw_rect(
-			safe_rect,
-			Color(dark_color, 0.92)
-		)
-		draw_rect(
-			safe_rect,
-			border_color,
-			false,
-			4.0
-		)
-		draw_rect(
-			Rect2(-86.0, -46.0, 172.0, 92.0),
-			Color(0.35, 0.25, 0.45, 0.35),
-			false,
-			2.0
-		)
+		var pumpkin_orange := Color("#D9782B")
+		var pumpkin_light := Color("#F0A04B")
+		var pumpkin_dark := Color("#63352A")
+
+		draw_circle(Vector2(-18.0, 0.0), 25.0, pumpkin_orange)
+		draw_circle(Vector2(18.0, 0.0), 25.0, pumpkin_orange)
+		draw_circle(Vector2(0.0, 2.0), 28.0, pumpkin_light)
 		draw_arc(
 			Vector2.ZERO,
-			30.0,
+			28.0,
 			0.0,
 			TAU,
 			24,
-			Color("#D0A9D6"),
-			2.0
+			pumpkin_dark,
+			3.0
 		)
 		draw_line(
-			Vector2(-18.0, 0.0),
-			Vector2(18.0, 0.0),
-			Color("#D0A9D6"),
-			2.0
+			Vector2(-9.0, -24.0),
+			Vector2(-4.0, -38.0),
+			Color("#5C7A43"),
+			7.0
+		)
+		draw_arc(
+			Vector2(-2.0, -36.0),
+			10.0,
+			PI,
+			TAU,
+			12,
+			Color("#789B50"),
+			4.0
+		)
+		draw_colored_polygon(
+			PackedVector2Array([
+				Vector2(-18.0, -4.0),
+				Vector2(-5.0, -11.0),
+				Vector2(-8.0, 3.0)
+			]),
+			Color("#332337")
+		)
+		draw_colored_polygon(
+			PackedVector2Array([
+				Vector2(18.0, -4.0),
+				Vector2(5.0, -11.0),
+				Vector2(8.0, 3.0)
+			]),
+			Color("#332337")
 		)
 		draw_line(
-			Vector2(0.0, -18.0),
-			Vector2(0.0, 18.0),
-			Color("#D0A9D6"),
-			2.0
+			Vector2(-15.0, 14.0),
+			Vector2(15.0, 14.0),
+			pumpkin_dark,
+			4.0
 		)
 		return
 
