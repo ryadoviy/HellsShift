@@ -41,6 +41,9 @@ jobs:
       - name: Import project resources
         run: godot --headless --editor --quit
 
+      - name: Prepare build directories
+        run: mkdir -p build/windows build/android
+
       - name: Build Windows app
         run: godot --headless --path . --export-release "Windows Desktop" build/windows/HellsShift.exe
 
