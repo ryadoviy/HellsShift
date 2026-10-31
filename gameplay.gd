@@ -81,8 +81,8 @@ func setup(game_manager: Node) -> void:
 	create_object(
 		GameInteractable.Kind.SAFE_ZONE,
 		&"",
-		Vector2(300, 560),
-		Color(0.25, 0.85, 0.75)
+		Vector2(790, 560),
+		Color(0.95, 0.35, 0.08)
 	)
 
 	# Невидима точка взаємодії зі справжнім вогнем.
