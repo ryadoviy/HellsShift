@@ -163,7 +163,10 @@ func _check_player_collision(ghost: Dictionary) -> void:
 		to_global(ghost["position"])
 	)
 
-	if distance <= 34.0:
+	if (
+		distance <= 34.0
+		and bool(ghost.get("freezes_player", false))
+	):
 		ghost["player_hit"] = true
 		player.freeze_for(block_duration)
 		ghost["phase"] = Phase.LEAVING
@@ -179,9 +182,10 @@ func spawn_ghost() -> bool:
 		edge_x,
 		randf_range(100.0, 230.0)
 	)
+	var freezes_player: bool = ghosts.size() % 2 == 0
 
 	# Створюємо графічного привида
-	var sprite := _create_ghost_sprite()
+	var sprite := _create_ghost_sprite(freezes_player)
 	sprite.position = entry_position
 
 	ghosts.append({
@@ -191,6 +195,7 @@ func spawn_ghost() -> bool:
 		"hunt_time_left": hunt_duration,
 		"seed": randf_range(0.0, TAU),
 		"player_hit": false,
+		"freezes_player": freezes_player,
 		"sprite": sprite
 	})
 
@@ -198,7 +203,7 @@ func spawn_ghost() -> bool:
 	return true
 
 
-func _create_ghost_sprite() -> AnimatedSprite2D:
+func _create_ghost_sprite(freezes_player: bool) -> AnimatedSprite2D:
 	var sprite := AnimatedSprite2D.new()
 	sprite.name = "AnimatedGhost"
 	sprite.centered = true
@@ -209,7 +214,12 @@ func _create_ghost_sprite() -> AnimatedSprite2D:
 		push_warning("No ghost animations loaded")
 		return sprite
 
-	sprite.sprite_frames = ghost_animations.pick_random()
+	var animation_index: int = 0 if freezes_player else 1
+	animation_index = mini(
+		animation_index,
+		ghost_animations.size() - 1
+	)
+	sprite.sprite_frames = ghost_animations[animation_index]
 
 	var texture: Texture2D = (
 		sprite.sprite_frames.get_frame_texture("fly", 0)
