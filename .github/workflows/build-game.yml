@@ -29,7 +29,7 @@ jobs:
       - name: Install Godot export templates
         run: |
           apt-get update
-          apt-get install -y curl unzip openjdk-17-jdk
+          apt-get install -y curl unzip openjdk-17-jdk nodejs npm wine
           curl -L \
             -o /tmp/godot-export-templates.tpz \
             https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
@@ -37,6 +37,18 @@ jobs:
           unzip -q -o /tmp/godot-export-templates.tpz -d /tmp/godot-templates
           cp -R /tmp/godot-templates/templates/. \
             /github/home/.local/share/godot/export_templates/4.4.1.stable/
+          npm install --global rcedit
+
+      - name: Configure Windows icon editing
+        run: |
+          mkdir -p /github/home/.config/godot
+          cat > /github/home/.config/godot/editor_settings-4.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+
+          export/windows/rcedit = "/usr/local/bin/rcedit"
+          EOF
 
       - name: Import project resources
         run: godot --headless --editor --quit
