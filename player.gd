@@ -12,6 +12,9 @@ var facing_direction: Vector2 = Vector2.DOWN
 var held_item_sprite: Sprite2D
 var item_textures: Dictionary = {}
 var normal_sprite_scale: Vector2
+var frozen_time_left: float = 0.0
+var hidden_time_left: float = 0.0
+var hideout_cooldown_left: float = 0.0
 
 @onready var witch_sprite: AnimatedSprite2D = $WitchSprite
 
@@ -52,6 +55,11 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if is_frozen():
+		velocity = Vector2.ZERO
+		witch_sprite.pause()
+		return
+
 	var direction := Input.get_vector(
 		"move_left",
 		"move_right",
@@ -68,6 +76,54 @@ func _physics_process(_delta: float) -> void:
 	update_witch_animation(direction)
 	_align_sprite_to_feet()
 	_update_depth()
+
+
+func _process(delta: float) -> void:
+	hideout_cooldown_left = maxf(0.0, hideout_cooldown_left - delta)
+
+	if hidden_time_left > 0.0:
+		hidden_time_left = maxf(0.0, hidden_time_left - delta)
+		if hidden_time_left <= 0.0:
+			_set_hidden(false)
+
+	if frozen_time_left <= 0.0:
+		return
+
+	var was_frozen := is_frozen()
+	frozen_time_left = maxf(0.0, frozen_time_left - delta)
+
+	if was_frozen and not is_frozen():
+		witch_sprite.play()
+
+
+func freeze_for(duration: float) -> void:
+	frozen_time_left = maxf(frozen_time_left, duration)
+	velocity = Vector2.ZERO
+	witch_sprite.pause()
+
+
+func is_frozen() -> bool:
+	return frozen_time_left > 0.0
+
+
+func enter_hideout(duration: float) -> bool:
+	if is_frozen() or hidden_time_left > 0.0 or hideout_cooldown_left > 0.0:
+		return false
+
+	hidden_time_left = duration
+	_set_hidden(true)
+	return true
+
+
+func is_hidden() -> bool:
+	return hidden_time_left > 0.0
+
+
+func _set_hidden(hidden: bool) -> void:
+	witch_sprite.modulate.a = 0.35 if hidden else 1.0
+	held_item_sprite.modulate.a = 0.35 if hidden else 1.0
+	if not hidden:
+		hideout_cooldown_left = 10.0
 
 
 # Повертає текстуру поточного кадру AnimatedSprite2D.
@@ -171,7 +227,7 @@ func _get_item_texture(item_id: StringName) -> Texture2D:
 	var path: String
 
 	if item_id == &"water":
-		path = "res://assets/sprites/objects/water.png"
+		path = "res://assets/sprites/objects/water.PNG"
 	else:
 		path = "res://assets/sprites/ingredients/%s.png" % str(item_id)
 
@@ -228,6 +284,9 @@ func _update_depth() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_frozen():
+		return
+
 	if event.is_action_pressed("interact"):
 		interact_with_nearest()
 	elif event.is_action_pressed("drop_item"):
@@ -237,8 +296,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func interact_with_nearest() -> void:
 	var nearest_item: GameInteractable = null
 	var nearest_item_distance: float = INF
-	var nearby_cauldron: GameInteractable = null
-	var cauldron_distance: float = INF
+	var nearby_fire: GameInteractable = null
+	var fire_distance: float = INF
+	var nearby_action: GameInteractable = null
+	var action_distance: float = INF
 
 	for node in get_tree().get_nodes_in_group("interactables"):
 		var target := node as GameInteractable
@@ -254,11 +315,27 @@ func interact_with_nearest() -> void:
 		)
 
 		if inventory.has_item():
-			# Коли руки зайняті, предмет можна використати на казані.
-			if target.kind == GameInteractable.Kind.CAULDRON:
-				if distance < cauldron_distance:
-					nearby_cauldron = target
-					cauldron_distance = distance
+			if (
+				inventory.held_item == &"water"
+				and target.kind == GameInteractable.Kind.FIRE
+				and distance < fire_distance
+			):
+				nearby_fire = target
+				fire_distance = distance
+				continue
+
+			var can_use_item: bool = (
+				target.kind == GameInteractable.Kind.CAULDRON
+				or target.kind == GameInteractable.Kind.SAFE_ZONE
+				or (
+					target.kind == GameInteractable.Kind.FIRE
+					and inventory.held_item == &"water"
+				)
+			)
+
+			if can_use_item and distance < action_distance:
+				nearby_action = target
+				action_distance = distance
 		else:
 			# З порожніми руками шукаємо найближчий інгредієнт або воду.
 			if target.kind != GameInteractable.Kind.CAULDRON:
@@ -267,8 +344,10 @@ func interact_with_nearest() -> void:
 					nearest_item_distance = distance
 
 	if inventory.has_item():
-		if nearby_cauldron != null:
-			nearby_cauldron.interact(self)
+		if nearby_fire != null:
+			nearby_fire.interact(self)
+		elif nearby_action != null:
+			nearby_action.interact(self)
 	else:
 		if nearest_item != null:
 			nearest_item.interact(self)
@@ -286,6 +365,10 @@ func drop_held_item() -> void:
 func reset_player() -> void:
 	velocity = Vector2.ZERO
 	facing_direction = Vector2.DOWN
+	frozen_time_left = 0.0
+	hidden_time_left = 0.0
+	hideout_cooldown_left = 0.0
+	_set_hidden(false)
 
 	if inventory != null:
 		inventory.reset()

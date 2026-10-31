@@ -2,6 +2,8 @@
 extends Node
 class_name Gameplay
 
+const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
+
 const ITEM_NAMES = {
 	&"mushroom": "Mushroom",
 	&"eye": "Eye",
@@ -76,6 +78,13 @@ func setup(game_manager: Node) -> void:
 		Color(0.2, 0.6, 1.0)
 	)
 
+	create_object(
+		GameInteractable.Kind.SAFE_ZONE,
+		&"",
+		Vector2(790, 560),
+		Color(0.95, 0.35, 0.08)
+	)
+
 	# Невидима точка взаємодії зі справжнім вогнем.
 	fire_target = create_object(
 		GameInteractable.Kind.FIRE,
@@ -91,6 +100,7 @@ func setup(game_manager: Node) -> void:
 	ghost_system.name = "GhostSystem"
 	add_child(ghost_system)
 	ghost_system.setup(objects)
+	ghost_system.set_player(player)
 
 
 func _setup_feedback() -> void:
@@ -104,6 +114,7 @@ func _setup_feedback() -> void:
 	feedback_label.size = Vector2(800, 50)
 	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	feedback_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	feedback_label.add_theme_font_override("font", UI_FONT)
 	feedback_label.add_theme_font_size_override("font_size", 28)
 	feedback_label.add_theme_color_override(
 		"font_shadow_color", Color.BLACK
@@ -140,6 +151,10 @@ func create_object(
 		GameInteractable.Kind.FIRE:
 			target.display_name = "Fire"
 			target.interaction_distance = 150.0
+
+		GameInteractable.Kind.SAFE_ZONE:
+			target.display_name = "Hideout"
+			target.interaction_distance = 120.0
 
 		_:
 			target.display_name = str(
@@ -192,11 +207,6 @@ func on_interacted(
 					"FIRE EXTINGUISHED! -35%",
 					Color(0.5, 0.85, 1.0)
 				)
-			else:
-				_show_feedback(
-					"WATER IS LOCKED!",
-					Color(1.0, 0.5, 0.5)
-				)
 
 			return
 
@@ -212,6 +222,19 @@ func on_interacted(
 		# --------------------------------
 		GameInteractable.Kind.CAULDRON:
 			_interact_with_cauldron()
+			return
+
+		GameInteractable.Kind.SAFE_ZONE:
+			if player.enter_hideout(5.0):
+				_show_feedback(
+					"HIDDEN FROM GHOSTS!",
+					Color(0.5, 1.0, 0.85)
+				)
+			else:
+				_show_feedback(
+					"HIDEOUT IS ON COOLDOWN!",
+					Color(0.7, 0.8, 1.0)
+				)
 			return
 
 		# --------------------------------
@@ -240,10 +263,11 @@ func on_interacted(
 
 
 func _try_take_water(target: GameInteractable) -> void:
-	# Перевіряємо нагороду за три зілля.
-	if not manager.water_unlocked:
+	# Перевіряємо нагороду за потрібну кількість зіль.
+	if manager.potions_brewed < manager.config.potions_for_water:
 		_show_feedback(
-			"BREW 3 POTIONS TO UNLOCK WATER!",
+			"BREW %d POTIONS TO UNLOCK WATER!"
+			% manager.config.potions_for_water,
 			Color(0.75, 0.65, 1.0)
 		)
 		return
@@ -369,10 +393,16 @@ func _on_recipe_completed() -> void:
 
 	_flash_cauldron(Color(0.7, 1.0, 0.5))
 
-	_show_feedback(
-		"POTION COMPLETE!",
-		Color(0.7, 1.0, 0.5)
-	)
+	if manager.water_unlocked:
+		_show_feedback(
+			"GO GET WATER AND EXTINGUISH THE FIRE!",
+			Color(0.5, 0.85, 1.0)
+		)
+	else:
+		_show_feedback(
+			"POTION COMPLETE!",
+			Color(0.7, 1.0, 0.5)
+		)
 
 
 func _show_feedback(message: String, color: Color) -> void:

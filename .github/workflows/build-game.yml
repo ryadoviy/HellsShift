@@ -1,0 +1,48 @@
+name: Build HellsShift
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fire-spread-recipe-thresholds
+    paths:
+      - '**.gd'
+      - '**.tscn'
+      - '**.tres'
+      - '**.png'
+      - '**.jpg'
+      - '**.ttf'
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - '.github/workflows/build-game.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Import project resources
+        run: godot --headless --editor --quit
+
+      - name: Build Windows app
+        run: godot --headless --path . --export-release "Windows Desktop" build/windows/HellsShift.exe
+
+      - name: Build Android APK
+        run: godot --headless --path . --export-debug "Android" build/android/HellsShift.apk
+
+      - name: Upload Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: HellsShift-Windows
+          path: build/windows/
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HellsShift-Android
+          path: build/android/HellsShift.apk
