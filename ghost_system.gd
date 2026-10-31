@@ -104,7 +104,8 @@ func advance(delta: float) -> void:
 
 	if spawn_time_left <= 0.0:
 		spawn_time_left = spawn_interval
-		spawn_ghost()
+		while ghosts.size() < max_ghosts and spawn_ghost():
+			pass
 
 	for index in range(ghosts.size() - 1, -1, -1):
 		var ghost: Dictionary = ghosts[index]
