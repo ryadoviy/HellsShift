@@ -48,8 +48,8 @@ func _ready() -> void:
 		Kind.WATER:
 			caption.position = Vector2(-65, 40)
 		Kind.SAFE_ZONE:
-			caption.text = "SAFE ZONE"
-			caption.position = Vector2(-75, 58)
+			caption.text = "WITCH'S SANCTUARY"
+			caption.position = Vector2(-100, 64)
 		_:
 			caption.position = Vector2(-65, 28)
 
@@ -191,19 +191,51 @@ func _draw() -> void:
 		return
 
 	if kind == Kind.SAFE_ZONE:
-		var safe_rect := Rect2(-90.0, -55.0, 180.0, 110.0)
-		draw_rect(safe_rect, Color(object_color, 0.32))
-		draw_rect(safe_rect, object_color, false, 4.0)
-		draw_line(
-			Vector2(-90.0, 0.0),
-			Vector2(90.0, 0.0),
-			Color(1.0, 1.0, 1.0, 0.22),
+		var safe_rect := Rect2(-100.0, -60.0, 200.0, 120.0)
+		var sanctuary_color := Color("#6D5ACF")
+		draw_rect(
+			safe_rect,
+			Color(sanctuary_color, 0.3)
+		)
+		draw_rect(
+			safe_rect,
+			sanctuary_color,
+			false,
+			4.0
+		)
+		draw_circle(
+			Vector2.ZERO,
+			38.0,
+			Color(0.25, 0.8, 0.95, 0.18)
+		)
+		draw_arc(
+			Vector2.ZERO,
+			38.0,
+			0.0,
+			TAU,
+			6,
+			Color(0.65, 0.9, 1.0, 0.9),
+			3.0
+		)
+		draw_arc(
+			Vector2.ZERO,
+			20.0,
+			0.0,
+			TAU,
+			6,
+			Color(0.85, 0.65, 1.0, 0.9),
 			2.0
 		)
 		draw_line(
-			Vector2(0.0, -55.0),
-			Vector2(0.0, 55.0),
-			Color(1.0, 1.0, 1.0, 0.22),
+			Vector2(-28.0, 0.0),
+			Vector2(28.0, 0.0),
+			Color(0.85, 0.65, 1.0, 0.8),
+			2.0
+		)
+		draw_line(
+			Vector2(0.0, -28.0),
+			Vector2(0.0, 28.0),
+			Color(0.85, 0.65, 1.0, 0.8),
 			2.0
 		)
 		return

@@ -124,6 +124,10 @@ func advance(delta: float) -> void:
 		var position: Vector2 = ghost["position"]
 		var phase: int = int(ghost["phase"])
 
+		if player != null and player.is_hidden():
+			ghost["phase"] = Phase.LEAVING
+			phase = Phase.LEAVING
+
 		match phase:
 			Phase.FLYING:
 				if player == null:
