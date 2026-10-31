@@ -2,6 +2,9 @@ extends Node2D
 class_name GameInteractable
 
 const UI_FONT := preload("res://assets/fonts/MedievalSharp-Regular.ttf")
+const SAFE_ZONE_TEXTURE := preload(
+	"res://assets/sprites/objects/safe_point_pumpkin.jpg"
+)
 
 signal interacted(target: GameInteractable, actor: Node)
 
@@ -23,8 +26,7 @@ func _ready() -> void:
 	add_to_group("interactables")
 	if kind == Kind.FIRE:
 		return
-	if kind != Kind.SAFE_ZONE:
-		_setup_visual_sprite()
+	_setup_visual_sprite()
 
 	if kind == Kind.CAULDRON:
 		z_index = 4
@@ -78,23 +80,33 @@ func _setup_visual_sprite() -> void:
 		Kind.WATER:
 			image_path = "res://assets/sprites/objects/water.PNG"
 			target_size = 150.0
+		Kind.SAFE_ZONE:
+			target_size = 115.0
 
-	if not ResourceLoader.exists(image_path):
-		push_warning("Image not found: " + image_path)
-		return
+	if kind == Kind.SAFE_ZONE:
+		visual_sprite = Sprite2D.new()
+		visual_sprite.name = "VisualSprite"
+		visual_sprite.texture = SAFE_ZONE_TEXTURE
+		visual_sprite.centered = true
+		visual_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		visual_sprite.material = _create_safe_zone_material()
+	else:
+		if not ResourceLoader.exists(image_path):
+			push_warning("Image not found: " + image_path)
+			return
 
-	var texture := load(image_path) as Texture2D
-	if texture == null:
-		return
+		var texture := load(image_path) as Texture2D
+		if texture == null:
+			return
 
-	visual_sprite = Sprite2D.new()
-	visual_sprite.name = "VisualSprite"
-	visual_sprite.texture = texture
-	visual_sprite.centered = true
+		visual_sprite = Sprite2D.new()
+		visual_sprite.name = "VisualSprite"
+		visual_sprite.texture = texture
+		visual_sprite.centered = true
 
 	var longest_side: float = maxf(
-		float(texture.get_width()),
-		float(texture.get_height())
+		float(visual_sprite.texture.get_width()),
+		float(visual_sprite.texture.get_height())
 	)
 
 	if longest_side > 0.0:
@@ -106,8 +118,28 @@ func _setup_visual_sprite() -> void:
 		visual_sprite.position = CAULDRON_VISUAL_CENTER
 	elif kind == Kind.WATER:
 		visual_sprite.position = Vector2(0, -18)
+	elif kind == Kind.SAFE_ZONE:
+		visual_sprite.position = Vector2(0, -10)
 
 	add_child(visual_sprite)
+
+
+func _create_safe_zone_material() -> ShaderMaterial:
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+render_mode unshaded;
+
+void fragment() {
+	vec4 source = texture(TEXTURE, UV);
+	float whiteness = min(source.r, min(source.g, source.b));
+	float alpha = 1.0 - smoothstep(0.88, 0.98, whiteness);
+	COLOR = vec4(source.rgb, source.a * alpha);
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	return material
 
 
 func _setup_cauldron_collision() -> void:
@@ -188,62 +220,6 @@ func interact(actor: Node2D) -> void:
 
 func _draw() -> void:
 	if visual_sprite != null:
-		return
-
-	if kind == Kind.SAFE_ZONE:
-		var pumpkin_orange := Color("#D9782B")
-		var pumpkin_light := Color("#F0A04B")
-		var pumpkin_dark := Color("#63352A")
-
-		draw_circle(Vector2(-18.0, 0.0), 25.0, pumpkin_orange)
-		draw_circle(Vector2(18.0, 0.0), 25.0, pumpkin_orange)
-		draw_circle(Vector2(0.0, 2.0), 28.0, pumpkin_light)
-		draw_arc(
-			Vector2.ZERO,
-			28.0,
-			0.0,
-			TAU,
-			24,
-			pumpkin_dark,
-			3.0
-		)
-		draw_line(
-			Vector2(-9.0, -24.0),
-			Vector2(-4.0, -38.0),
-			Color("#5C7A43"),
-			7.0
-		)
-		draw_arc(
-			Vector2(-2.0, -36.0),
-			10.0,
-			PI,
-			TAU,
-			12,
-			Color("#789B50"),
-			4.0
-		)
-		draw_colored_polygon(
-			PackedVector2Array([
-				Vector2(-18.0, -4.0),
-				Vector2(-5.0, -11.0),
-				Vector2(-8.0, 3.0)
-			]),
-			Color("#332337")
-		)
-		draw_colored_polygon(
-			PackedVector2Array([
-				Vector2(18.0, -4.0),
-				Vector2(5.0, -11.0),
-				Vector2(8.0, 3.0)
-			]),
-			Color("#332337")
-		)
-		draw_line(
-			Vector2(-15.0, 14.0),
-			Vector2(15.0, 14.0),
-			pumpkin_dark,
-			4.0
-		)
 		return
 
 	var radius: float = 20.0
