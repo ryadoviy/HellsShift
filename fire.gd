@@ -12,9 +12,21 @@ signal fire_maxed
 @onready var light: PointLight2D = get_node_or_null("PointLight2D")
 @onready var fire_sprite: Sprite2D = get_node_or_null("FireSprite")
 
+const SPREAD_POSITIONS := [
+	Vector2(-260.0, -35.0),
+	Vector2(-510.0, -170.0),
+	Vector2(-760.0, -80.0),
+	Vector2(-470.0, 55.0),
+	Vector2(-110.0, -220.0),
+	Vector2(-760.0, -260.0)
+]
+
+const SPREAD_LEVELS := [25.0, 40.0, 55.0, 70.0, 85.0, 95.0]
+
 var animation_time: float = 0.0
 var effects_visible: bool = false
 var _has_emitted_max: bool = false
+var spread_sprites: Array[Sprite2D] = []
 
 
 func _ready() -> void:
@@ -26,6 +38,7 @@ func _ready() -> void:
 	if fire_sprite != null:
 		fire_sprite.modulate = Color.WHITE
 
+	_create_spread_flames()
 	set_level(level)
 
 
@@ -40,6 +53,7 @@ func decrease(amount: float) -> void:
 func set_level(value: float) -> void:
 	level = clampf(value, 0.0, 100.0)
 	update_fire_visual()
+	_update_spread_flames()
 
 	if light != null:
 		light.energy = 0.35 + level / 100.0
@@ -54,6 +68,49 @@ func set_level(value: float) -> void:
 		_has_emitted_max = false
 
 	queue_redraw()
+
+
+func _create_spread_flames() -> void:
+	if fire_sprite == null or fire_sprite.texture == null:
+		return
+
+	for index in range(SPREAD_POSITIONS.size()):
+		var spread_sprite := Sprite2D.new()
+		spread_sprite.name = "SpreadFire%d" % index
+		spread_sprite.texture = fire_sprite.texture
+		spread_sprite.position = SPREAD_POSITIONS[index]
+		spread_sprite.modulate = Color(1.0, 1.0, 1.0, 0.0)
+		spread_sprite.z_index = fire_sprite.z_index
+		add_child(spread_sprite)
+		spread_sprites.append(spread_sprite)
+
+
+func _update_spread_flames() -> void:
+	for index in range(spread_sprites.size()):
+		var spread_sprite := spread_sprites[index]
+		if not is_instance_valid(spread_sprite):
+			continue
+
+		var unlocked: bool = level >= SPREAD_LEVELS[index]
+		spread_sprite.modulate = Color(
+			1.0,
+			1.0,
+			1.0,
+			1.0 if unlocked else 0.0
+		)
+
+		if unlocked:
+			var size: float = lerpf(105.0, 185.0, level / 100.0)
+			var texture_size: Vector2 = spread_sprite.texture.get_size()
+			var longest_side: float = maxf(
+				texture_size.x,
+				texture_size.y
+			)
+
+			if longest_side > 0.0:
+				spread_sprite.scale = Vector2.ONE * (
+					size / longest_side
+				)
 
 
 func update_fire_visual() -> void:

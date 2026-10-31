@@ -101,18 +101,22 @@ func apply_fire_difficulty() -> void:
 		"EASY":
 			config.fire_growth_interval = 15.0
 			config.fire_growth_amount = 3.0
+			config.potions_for_water = 3
 
 		"NORMAL":
 			config.fire_growth_interval = 10.0
 			config.fire_growth_amount = 5.0
+			config.potions_for_water = 5
 
 		"HARD":
 			config.fire_growth_interval = 7.0
 			config.fire_growth_amount = 8.0
+			config.potions_for_water = 7
 
 		_:
 			config.fire_growth_interval = 10.0
 			config.fire_growth_amount = 5.0
+			config.potions_for_water = 5
 
 	print("DIFFICULTY: ", selected_difficulty)
 	print("FIRE EVERY: ", config.fire_growth_interval, "s")
@@ -186,7 +190,14 @@ func add_score(amount: int) -> void:
 func on_recipe_completed() -> void:
 	print("POTION COMPLETED!")
 	potions_brewed += 1
+	correct_potion_streak += 1
 	add_score(100)
+
+	if (
+		not water_unlocked
+		and correct_potion_streak >= config.potions_for_water
+	):
+		water_unlocked = true
 
 	fire.increase(config.success_fire)
 	modifier_manager.on_potion_completed(self)
