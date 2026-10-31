@@ -8,22 +8,31 @@ signal brewing_started
 signal recipe_completed
 
 const RECIPES = [
-	{
-		"name": "Invisibility",
-		"ingredients": [&"mushroom", &"eye", &"web"]
-	},
-	{
-		"name": "Speed",
-		"ingredients": [&"bat", &"mushroom", &"bone"]
-	},
-	{
-		"name": "Immortality",
-		"ingredients": [&"skull", &"eye", &"bat"]
-	},
-	{
-		"name": "Poison",
-		"ingredients": [&"spider", &"mushroom", &"bone"]
-	}
+    {"name": "Invisibility", "ingredients": [&"mushroom", &"eye", &"web"]},
+    {"name": "Speed", "ingredients": [&"bat", &"mushroom", &"bone"]},
+    {"name": "Immortality", "ingredients": [&"skull", &"eye", &"bat"]},
+    {"name": "Poison", "ingredients": [&"spider", &"mushroom", &"bone"]},
+    
+    {"name": "Healing", "ingredients": [&"mushroom", &"bone", &"eye"]},
+    {"name": "Night Vision", "ingredients": [&"eye", &"bat", &"mushroom"]},
+    {"name": "Levitation", "ingredients": [&"web", &"bat", &"bone"]},
+    {"name": "Luck", "ingredients": [&"spider", &"eye", &"mushroom"]},
+    {"name": "Fire Resistance", "ingredients": [&"bone", &"skull", &"mushroom"]},
+    {"name": "Frost", "ingredients": [&"eye", &"web", &"bone"]},
+    {"name": "Ghost Sight", "ingredients": [&"skull", &"web", &"eye"]},
+    {"name": "Dream", "ingredients": [&"mushroom", &"bat", &"web"]},
+    {"name": "Courage", "ingredients": [&"bone", &"spider", &"bat"]},
+    {"name": "Moonlight", "ingredients": [&"bat", &"eye", &"web"]},
+    {"name": "Shadow", "ingredients": [&"skull", &"bat", &"spider"]},
+    {"name": "Transformation", "ingredients": [&"spider", &"bone", &"skull"]},
+    {"name": "Silence", "ingredients": [&"web", &"mushroom", &"skull"]},
+    {"name": "Mana", "ingredients": [&"eye", &"mushroom", &"spider"]},
+    {"name": "Protection", "ingredients": [&"bone", &"web", &"skull"]},
+    {"name": "Clairvoyance", "ingredients": [&"eye", &"skull", &"spider"]},
+    {"name": "Stone Skin", "ingredients": [&"bone", &"mushroom", &"web"]},
+    {"name": "Spirit", "ingredients": [&"skull", &"bone", &"bat"]},
+    {"name": "Starlight", "ingredients": [&"bat", &"spider", &"eye"]},
+    {"name": "Antidote", "ingredients": [&"mushroom", &"spider", &"web"]}
 ]
 
 @export var brewing_duration: float = 1.5

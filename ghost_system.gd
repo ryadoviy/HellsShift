@@ -2,6 +2,8 @@
 extends Node2D
 class_name GhostSabotage
 
+signal ghost_spawned
+
 enum Phase { FLYING, BLOCKING, LEAVING }
 
 @export var ghost_size: float = 150.0
@@ -214,6 +216,7 @@ func spawn_ghost() -> bool:
 	})
 
 	queue_redraw()
+	ghost_spawned.emit()
 	return true
 
 
