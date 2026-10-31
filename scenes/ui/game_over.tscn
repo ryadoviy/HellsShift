@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dtu65yx6qlvla" path="res://scenes/ui/game_over.gd" id="1_x6o8e"]
 [ext_resource type="FontFile" uid="uid://ddbx5ipr81ond" path="res://assets/fonts/PirataOne-Regular.ttf" id="2_vfrx6"]
 [ext_resource type="FontFile" uid="uid://vpcp2l54ka3v" path="res://assets/fonts/MedievalSharp-Regular.ttf" id="3_o6b8n"]
+[ext_resource type="Texture2D" uid="uid://bn7nwtni73p8d" path="res://assets/sprites/ui/fire_sticker.png" id="3_vfrx6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xrivr"]
 content_margin_left = 25.0
@@ -65,8 +66,18 @@ horizontal_alignment = 1
 [node name="ScullIcon" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=1736875269]
 layout_mode = 2
 theme_override_font_sizes/font_size = 65
-text = "🔥"
 horizontal_alignment = 1
+
+[node name="FireSticker" type="TextureRect" parent="CenterContainer/ResultPanel/Content/ScullIcon" unique_id=785083703]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 123.0
+offset_top = -11.0
+offset_right = 223.0
+offset_bottom = 89.0
+texture = ExtResource("3_vfrx6")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ScoreLabel" type="Label" parent="CenterContainer/ResultPanel/Content" unique_id=1719491814]
 layout_mode = 2

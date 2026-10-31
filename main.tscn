@@ -6,6 +6,10 @@
 [ext_resource type="Script" uid="uid://dqer66yytgd0y" path="res://modifier_manager.gd" id="4_modifier"]
 [ext_resource type="Script" uid="uid://gx5ydo5uwntr" path="res://player.gd" id="5_player"]
 [ext_resource type="Resource" path="res://game_config_normal.tres" id="6_config"]
+[ext_resource type="PackedScene" uid="uid://cdfx64eo2c0he" path="res://scenes/ui/main_menu.tscn" id="7_4c57u"]
+[ext_resource type="PackedScene" uid="uid://b25wylvc5s0rq" path="res://scenes/ui/hud.tscn" id="8_efxa6"]
+[ext_resource type="PackedScene" uid="uid://clnifasgm11en" path="res://scenes/ui/pause_menu.tscn" id="9_dg77c"]
+[ext_resource type="PackedScene" uid="uid://dd8otoiqqq1ss" path="res://scenes/ui/game_over.tscn" id="10_ycdy4"]
 
 [sub_resource type="CapsuleShape2D" id="Capsule_player"]
 radius = 18.0
@@ -45,6 +49,7 @@ position = Vector2(1100, 530)
 script = ExtResource("4_modifier")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1089151581]
+visible = false
 
 [node name="Panel" type="Panel" parent="HUD" unique_id=1018044795]
 offset_left = 55.0
@@ -94,6 +99,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ScreenOverlay" type="CanvasLayer" parent="." unique_id=104911340]
+visible = false
 
 [node name="Overlay" type="Panel" parent="ScreenOverlay" unique_id=1794232722]
 offset_left = 267.0
@@ -102,3 +108,14 @@ offset_right = 1027.0
 offset_bottom = 382.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("Style_overlay")
+
+[node name="MainMenu" parent="." unique_id=197330378 instance=ExtResource("7_4c57u")]
+z_index = 10
+
+[node name="CustomHUD" parent="." unique_id=14307137 instance=ExtResource("8_efxa6")]
+
+[node name="PauseMenu" parent="." unique_id=682726898 instance=ExtResource("9_dg77c")]
+z_index = 10
+
+[node name="GameOver" parent="." unique_id=339193641 instance=ExtResource("10_ycdy4")]
+z_index = 10
